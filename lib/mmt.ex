@@ -47,7 +47,7 @@ defmodule Mmt do
 
 
   def read_config(cp) do
-    {:ok, data} = File.open(cp, fn(f) -> IO.read(f, :all) end)
+    {:ok, data} = File.open(cp, fn(f) -> IO.binread(f, :all) end)
     String.split(data, "\n")
     |> Enum.filter(&String.contains?(&1, "="))
     |> Enum.map(fn(x) -> Regex.replace(~R/#.*$/, x, "") end)

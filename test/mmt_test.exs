@@ -13,12 +13,12 @@ defmodule MmtFilesTest do
 
 
   setup context do
-    {fpath, 0} = System.cmd("mktemp", ["exu.XXXXX.eft"])
+    {fpath, 0} = System.cmd("mktemp", ["mmt.XXXXX.eft"])
     fpath = String.rstrip(fpath)
     write_file(fpath, context[:content])
 
     on_exit fn ->
-      System.cmd("rm", ["-f", fpath])
+      #System.cmd("rm", ["-f", fpath])
     end
 
     {:ok, fpath: fpath}

@@ -2,8 +2,21 @@ defmodule MmtTest do
   use ExUnit.Case
   doctest Mmt
 
-  test "the truth" do
-    assert 1 + 1 == 2
+  test "email address substitution works" do
+    template = """
+      Hello buddy,
+      this is your email: %EA%.
+
+      Thanks!
+      """
+    body = """
+      Hello buddy,
+      this is your email: 1@xy.com.
+
+      Thanks!
+      """
+    actual = Mmt.prep_email({template, "1@xy.com", "Not", "Needed"})
+    assert {"1@xy.com", body} == actual
   end
 end
 

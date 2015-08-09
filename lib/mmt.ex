@@ -47,6 +47,24 @@ defmodule Mmt do
   dry-run parameters.
   """
   def do_mmt({tp, cp, dr}) do
+    {:ok, template} = File.open(tp, fn(f) -> IO.binread(f, :all) end)
+    who = read_config(cp)
+    mails = Enum.map(
+      who, fn {ea, [fna, lna]} -> prep_email({template, ea, fna, lna}) end)
+  end
+
+
+  @doc """
+  Prepares a single email given a template and the recipient's email adress,
+  first and last name. Returns a 2-tuple containing the recipient's email
+  address and the body.
+  """
+  def prep_email({template, ea, fna, lna}) do
+    body = Regex.replace(~r/%EA%/, template, ea, global: true)
+    body = Regex.replace(~r/%FN%/, body, fna, global: true)
+    body = Regex.replace(~r/%LN%/, body, lna, global: true)
+
+    {ea, body}
   end
 
 

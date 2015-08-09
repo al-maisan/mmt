@@ -6,7 +6,8 @@ defmodule Mmt do
   def main(argv) do
     { parse, _, _ } = OptionParser.parse(
       argv, strict: [help: :boolean, dry_run: :boolean,
-                     template_path: :string, config_path: :string])
+                     subject: :string, template_path: :string,
+                     config_path: :string])
 
     if parse[:help] do
       print_help()
@@ -22,7 +23,13 @@ defmodule Mmt do
       print_help()
       System.halt(102)
     end
-    do_mmt({parse[:template_path], parse[:config_path], parse[:dry_run]})
+    if !parse[:subject] do
+      IO.puts "Please specify the email subject!"
+      print_help()
+      System.halt(103)
+    end
+    do_mmt({parse[:template_path], parse[:config_path], parse[:dry_run],
+            parse[:subject]})
   end
 
 
@@ -36,6 +43,7 @@ defmodule Mmt do
         --config-path   path to the config file
         --dry-run       print commands that would be executed, but do not
                         execute them
+        --subject       email subject
         --template-path path to the template file
       """
     IO.puts help_text
@@ -46,7 +54,7 @@ defmodule Mmt do
   Send out the emails given the template path, configuration path and
   dry-run parameters.
   """
-  def do_mmt({tp, cp, dr}) do
+  def do_mmt({tp, cp, dr, subj}) do
     {:ok, template} = File.open(tp, fn(f) -> IO.binread(f, :all) end)
     who = read_config(cp)
     mails = Enum.map(

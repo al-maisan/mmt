@@ -42,20 +42,28 @@ defmodule Mmt do
   end
 
 
+  @doc """
+  Send out the emails given the template path, configuration path and
+  dry-run parameters.
+  """
   def do_mmt({tp, cp, dr}) do
   end
 
 
+  @doc """
+  Read the configuration file and return a Map where the keys are the email
+  addresses and the values are the full names.
+  """
   def read_config(cp) do
     {:ok, data} = File.open(cp, fn(f) -> IO.binread(f, :all) end)
     String.split(data, "\n")
     |> Enum.filter(&String.contains?(&1, "="))
-    |> Enum.map(fn(x) -> Regex.replace(~R/#.*$/, x, "") end)
+    |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
     |> Enum.map(
       fn line ->
         [key, value] = String.split(line, "=")
         key = String.strip(key)
-        {key, String.strip(value)}
+        {key, String.split(value, ~r{\s}, parts: 2, trim: true)}
       end)
     |> Enum.into(Map.new)
   end

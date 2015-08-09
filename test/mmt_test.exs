@@ -26,25 +26,28 @@ defmodule MmtFilesTest do
 
 
   @tag content: """
+    # Easy version
     jd@example.com=John Doe III
-    mm@gmail.com=Mickey Mouse
+    mm@gmail.com=Mickey Mouse   # trailing comment!!
     """
   test "read_config() works", context do
-    expected = %{"jd@example.com" => "John Doe III",
-                 "mm@gmail.com" => "Mickey Mouse"}
+    expected = %{"jd@example.com" => ["John", "Doe III"],
+                 "mm@gmail.com" => ["Mickey", "Mouse"]}
     actual = Mmt.read_config(context[:fpath])
     assert actual == expected
   end
 
 
   @tag content: """
+    # config file with repeating keys (email addresses)
+        # dangling comment
     abx.fgh@exact.ly=Éso Pita
     fheh@fphfdd.cc=Gulliver Jöllo
     abx.fgh@exact.ly=Charly De Gaulle
     """
   test "read_config() with repeated keys", context do
-    expected = %{"abx.fgh@exact.ly" => "Charly De Gaulle",
-                 "fheh@fphfdd.cc" => "Gulliver Jöllo"}
+    expected = %{"abx.fgh@exact.ly" => ["Charly", "De Gaulle"],
+                 "fheh@fphfdd.cc" => ["Gulliver", "Jöllo"]}
     actual = Mmt.read_config(context[:fpath])
     assert actual == expected
   end

@@ -5,18 +5,54 @@ defmodule MmtTest do
   test "email address substitution works" do
     template = """
       Hello buddy,
-      this is your email: %EA%.
+      this is your email: %EA%%EA%.
 
       Thanks!
       """
     body = """
       Hello buddy,
-      this is your email: 1@xy.com.
+      this is your email: 1@xy.com1@xy.com.
 
       Thanks!
       """
     actual = Mmt.prep_email({template, "1@xy.com", "Not", "Needed"})
     assert {"1@xy.com", body} == actual
+  end
+
+
+  test "first name substitution works" do
+    template = """
+      Hello %FN%,
+      this is your email: %EA%%EA%.
+
+      Thanks!
+      """
+    body = """
+      Hello Goth,
+      this is your email: 2@xy.com2@xy.com.
+
+      Thanks!
+      """
+    actual = Mmt.prep_email({template, "2@xy.com", "Goth", "Mox"})
+    assert {"2@xy.com", body} == actual
+  end
+
+
+  test "last name substitution works" do
+    template = """
+      Hello %FN% // %LN%,
+      this is your email: %EA%%EA%.
+
+      Thanks!
+      """
+    body = """
+      Hello King // Kong,
+      this is your email: 3@xy.com3@xy.com.
+
+      Thanks!
+      """
+    actual = Mmt.prep_email({template, "3@xy.com", "King", "Kong"})
+    assert {"3@xy.com", body} == actual
   end
 end
 

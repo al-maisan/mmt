@@ -59,6 +59,33 @@ defmodule Mmt do
     who = read_config(cp)
     mails = Enum.map(
       who, fn {ea, [fna, lna]} -> prep_email({template, ea, fna, lna}) end)
+
+    if dr do
+      IO.puts(do_dryrun(mails, subj))
+    else
+      do_send(mails, subj)
+    end
+  end
+
+
+  def do_send(_m, _s) do
+  end
+
+
+  @doc """
+  Prepares the text to be printed in case of a dry run.
+  """
+  def do_dryrun(mails, subj) do
+    mails |> Enum.map(fn {ea, body} ->
+      body = String.rstrip(body)
+      """
+      To: #{ea}
+      Subject: #{subj}
+
+      #{body}
+      ---
+      """
+      end)
   end
 
 

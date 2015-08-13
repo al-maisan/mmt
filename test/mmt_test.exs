@@ -54,6 +54,27 @@ defmodule MmtTest do
     actual = Mmt.prep_email({template, "3@xy.com", "King", "Kong"})
     assert {"3@xy.com", body} == actual
   end
+
+
+  test "dry_run() works" do
+    body1 = """
+      Hello Honky !! Tonk,
+      this is your email: 11@xy.com11@xy.com.
+
+      Thanks!
+      """
+    body2 = """
+      Hola Mini ## Mouse,
+      this is your email: 22@xy.com22@xy.com.
+
+      Gracias
+      """
+    actual = Mmt.do_dryrun(
+      [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1")
+    expected = ["To: 11@xy.com\nSubject: Test 1\n\nHello Honky !! Tonk,\nthis is your email: 11@xy.com11@xy.com.\n\nThanks!\n---\n",
+            "To: 22@xy.com\nSubject: Test 1\n\nHola Mini ## Mouse,\nthis is your email: 22@xy.com22@xy.com.\n\nGracias\n---\n"]
+    assert expected == actual
+  end
 end
 
 

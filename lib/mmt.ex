@@ -7,10 +7,19 @@ defmodule Mmt do
     { parse, _, _ } = OptionParser.parse(
       argv, strict: [help: :boolean, dry_run: :boolean,
                      subject: :string, template_path: :string,
-                     config_path: :string])
+                     config_path: :string, sample_config: :boolean,
+                     sample_template: :boolean])
 
     if parse[:help] do
       print_help()
+      System.halt(0)
+    end
+    if parse[:sample_config] do
+      print_sample_config()
+      System.halt(0)
+    end
+    if parse[:sample_template] do
+      print_sample_template()
       System.halt(0)
     end
     if !parse[:template_path] do
@@ -39,12 +48,39 @@ defmodule Mmt do
       Send emails in bulk based on a template and a config file containing
       the email body and recipient names/addresses respectively.
 
-        --help          print this help
-        --config-path   path to the config file
-        --dry-run       print commands that would be executed, but do not
-                        execute them
-        --subject       email subject
-        --template-path path to the template file
+        --help            print this help
+        --config-path     path to the config file
+        --dry-run         print commands that would be executed, but do not
+                          execute them
+        --subject         email subject
+        --template-path   path to the template file
+        --sample-config   prints a sample config file to stdout
+        --sample-template prints a sample template file to stdout
+      """
+    IO.puts help_text
+  end
+
+
+  defp print_sample_config() do
+    help_text = """
+      # anything that follows a hash is a comment
+      # email address is to the left of the '=' sign, first word after is
+      # the first name, the rest is the surname
+      jd@example.com=John Doe III
+      mm@gmail.com=Mickey Mouse   # trailing comment!!
+      """
+    IO.puts help_text
+  end
+
+
+  defp print_sample_template() do
+    help_text = """
+      FN / LN / EA = first name / last name / email address
+
+      Hello %FN% // %LN%,
+      this is your email * 2: %EA%%EA%.
+
+      Thanks!
       """
     IO.puts help_text
   end

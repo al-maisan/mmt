@@ -37,8 +37,15 @@ defmodule Mmt do
       print_help()
       System.halt(103)
     end
-    do_mmt({parse[:template_path], parse[:config_path], parse[:dry_run],
-            parse[:subject]})
+    {:ok, data} = File.open(parse[:config_path],
+                            fn(f) -> IO.binread(f, :all) end)
+    case Mmt.check_config(data) do
+      :ok -> do_mmt({parse[:template_path], data,
+                     parse[:dry_run], parse[:subject]})
+      {:error, errors} ->
+        for e <- errors, do: IO.puts "Error: #{e}"
+        System.halt(104)
+    end
   end
 
 
@@ -66,6 +73,9 @@ defmodule Mmt do
       # anything that follows a hash is a comment
       # email address is to the left of the '=' sign, first word after is
       # the first name, the rest is the surname
+      [sender]
+      rts@example.com=Frodo Baggins
+      [recipients]
       jd@example.com=John Doe III
       mm@gmail.com=Mickey Mouse   # trailing comment!!
       """
@@ -90,9 +100,9 @@ defmodule Mmt do
   Send out the emails given the template path, configuration path and
   dry-run parameters.
   """
-  def do_mmt({tp, cp, dr, subj}) do
+  def do_mmt({tp, config, dr, subj}) do
     {:ok, template} = File.open(tp, fn(f) -> IO.binread(f, :all) end)
-    who = read_config(cp)
+    who = read_config(config)
     mails = Enum.map(
       who, fn {ea, [fna, lna]} -> prep_email({template, ea, fna, lna}) end)
 
@@ -143,9 +153,8 @@ defmodule Mmt do
   Read the configuration file and return a Map where the keys are the email
   addresses and the values are the full names.
   """
-  def read_config(cp) do
-    {:ok, data} = File.open(cp, fn(f) -> IO.binread(f, :all) end)
-    String.split(data, "\n")
+  def read_config(config) do
+    String.split(config, "\n")
     |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
     |> Enum.filter(&String.contains?(&1, "="))
     |> Enum.map(

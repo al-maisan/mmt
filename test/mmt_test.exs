@@ -191,7 +191,9 @@ defmodule MmtFilesTest do
   test "read_config() works", context do
     expected = %{"jd@example.com" => ["John", "Doe III"],
                  "mm@gmail.com" => ["Mickey", "Mouse"]}
-    actual = Mmt.read_config(context[:fpath])
+    {:ok, data} = File.open(context[:fpath],
+                            fn(f) -> IO.binread(f, :all) end)
+    actual = Mmt.read_config(data)
     assert actual == expected
   end
 
@@ -206,7 +208,9 @@ defmodule MmtFilesTest do
   test "read_config() with repeated keys", context do
     expected = %{"abx.fgh@exact.ly" => ["Charly", "De Gaulle"],
                  "fheh@fphfdd.cc" => ["Gulliver", "Jöllo"]}
-    actual = Mmt.read_config(context[:fpath])
+    {:ok, data} = File.open(context[:fpath],
+                            fn(f) -> IO.binread(f, :all) end)
+    actual = Mmt.read_config(data)
     assert actual == expected
   end
 

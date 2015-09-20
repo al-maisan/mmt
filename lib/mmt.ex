@@ -117,7 +117,36 @@ defmodule Mmt do
   end
 
 
-  def do_send(_m, _subj, _sender) do
+  defp write_file(content) do
+    {path, 0} = System.cmd("mktemp", ["/tmp/mmt.XXXXX.eml"])
+    path = String.rstrip(path)
+    {:ok, file} = File.open path, [:write]
+    IO.binwrite file, content
+    File.close file
+    path
+  end
+
+
+  @doc """
+  Tail recursive function that actually sends the emails by calling
+  the 'mail' command via a shell.
+  """
+  def do_send([], _, _), do: nil
+  def do_send([{addr, body}|mails], subj, sender) do
+    path = write_file(String.rstrip(body))
+    cmd = construct_cmd(path, sender, subj, addr)
+    :os.cmd(cmd)
+    System.cmd("rm", ["-f", path])
+    do_send(mails, subj, sender)
+  end
+
+
+  def construct_cmd(path, sender, subj, addr) do
+    [{ea, nl}] = Map.to_list(sender)
+    header = "\"From: #{Enum.join(nl, " ")} <#{ea}>\""
+    cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> addr
+    IO.puts "'#{cmd}'"
+    to_char_list(cmd)
   end
 
 

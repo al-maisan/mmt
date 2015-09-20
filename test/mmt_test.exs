@@ -2,6 +2,71 @@ defmodule MmtTest do
   use ExUnit.Case
   doctest Mmt
 
+  test "check_config() complains about missing sections" do
+    config = """
+      [a]
+      [b]
+      """
+    actual = Mmt.check_config(config)
+    assert {:error, ["missing sections: 'recipients, sender'"]} == actual
+  end
+
+
+  test "check_config() complains about repeating sections" do
+    config = """
+      [sender]
+      [sender]
+      [recipients]
+      [recipients]
+      """
+    actual = Mmt.check_config(config)
+    assert {:error, ["repeating sections: 'recipients, sender'"]} == actual
+  end
+
+
+  test "check_config() complains about missing, repeating sections" do
+    config = """
+      [a][b][c]
+      [b][a]
+      """
+    actual = Mmt.check_config(config)
+    assert {:error, ["missing sections: 'recipients, sender'", "repeating sections: 'a, b'"]} == actual
+  end
+
+
+  test "check_config() complains about missing sender entry" do
+    config = """
+      [sender]
+      [recipients]
+      """
+    actual = Mmt.check_config(config)
+    assert {:error, ["the sender section requires exactly one entry"]} == actual
+  end
+
+
+  test "check_config() complains about more than one sender entry" do
+    config = """
+      [sender]
+      abc@def.hi=E One
+      abd@def.hi=E Two
+      [recipients]
+      """
+    actual = Mmt.check_config(config)
+    assert {:error, ["the sender section requires exactly one entry"]} == actual
+  end
+
+
+  test "check_config() recognizes correct config" do
+    config = """
+      [sender]
+      abe@def.hi=This Is Correct
+      [recipients]
+      """
+    actual = Mmt.check_config(config)
+    assert :ok == actual
+  end
+
+
   test "email address substitution works" do
     template = """
       Hello buddy,

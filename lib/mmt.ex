@@ -146,8 +146,8 @@ defmodule Mmt do
   def read_config(cp) do
     {:ok, data} = File.open(cp, fn(f) -> IO.binread(f, :all) end)
     String.split(data, "\n")
-    |> Enum.filter(&String.contains?(&1, "="))
     |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
+    |> Enum.filter(&String.contains?(&1, "="))
     |> Enum.map(
       fn line ->
         [key, value] = String.split(line, "=")
@@ -155,5 +155,55 @@ defmodule Mmt do
         {key, String.split(value, ~r{\s}, parts: 2, trim: true)}
       end)
     |> Enum.into(Map.new)
+  end
+
+
+  @doc """
+  Returns either :ok or {:error, message} if the config file is correct
+  or faulty.
+  """
+  def check_config(config) do
+    { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")
+    content = Regex.scan(rx, config, [capture: :all_but_first])
+    sections = for [k, _v] <- content, do: k
+    errors = []
+
+    {_, counts} = Enum.map_reduce(
+      sections, HashDict.new,
+      fn(x, acc) -> {x, Dict.put(acc, x, Dict.get(acc, x, 0) + 1)} end)
+
+    # Check for missing sections
+    missing = (for k <- ["sender", "recipients"], counts[k] == nil, do: k)
+      |> Enum.sort
+    if Enum.count(missing) > 1 do
+      error = "missing sections: '" <> Enum.join(missing, ", ") <> "'"
+      errors = [error | errors]
+    end
+
+    # Check for repeating sections
+    repeating = Enum.filter(counts, fn({_k, v}) -> v > 1 end)
+    if Enum.count(repeating) > 1 do
+      repeating = (for {k, _v} <- repeating, do: k) |> Enum.sort
+      error = "repeating sections: '" <> Enum.join(repeating, ", ") <> "'"
+      errors = [error | errors]
+    end
+
+    # Check for single sender value
+    if not "sender" in repeating && not "sender" in missing do
+      [sender_value] = for [k, v] <- content, k == "sender", do: v
+      senders = String.split(sender_value, "\n")
+      |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
+      |> Enum.filter(&String.contains?(&1, "="))
+      |> Enum.count
+      if senders != 1 do
+        errors = ["the sender section requires exactly one entry" | errors]
+      end
+    end
+
+    if Enum.count(errors) > 0 do
+      {:error, errors |> Enum.sort}
+    else
+      :ok
+    end
   end
 end

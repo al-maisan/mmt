@@ -145,7 +145,6 @@ defmodule Mmt do
     [{ea, nl}] = Map.to_list(sender)
     header = "\"From: #{Enum.join(nl, " ")} <#{ea}>\""
     cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> addr
-    IO.puts "'#{cmd}'"
     to_char_list(cmd)
   end
 

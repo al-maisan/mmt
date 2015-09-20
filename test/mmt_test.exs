@@ -2,6 +2,18 @@ defmodule MmtTest do
   use ExUnit.Case
   doctest Mmt
 
+  test "construct_cmd()" do
+    path = "/tmp/mmt.kTuJU.eml"
+    sender = %{"mmt@chlo.cc" => ["Frodo", "Baggins"]}
+    subj = "hello from mmt"
+    addr = "r2@ahfdo.cc"
+    expected = 'cat /tmp/mmt.kTuJU.eml | mail -a "From: Frodo Baggins <mmt@chlo.cc>" -s "hello from mmt" r2@ahfdo.cc'
+
+    actual = Mmt.construct_cmd(path, sender, subj, addr)
+    assert expected == actual
+  end
+
+
   test "check_config() complains about missing sections" do
     config = """
       [a]

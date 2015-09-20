@@ -43,7 +43,8 @@ defmodule Mmt do
       :ok -> do_mmt({parse[:template_path], data,
                      parse[:dry_run], parse[:subject]})
       {:error, errors} ->
-        for e <- errors, do: IO.puts "Error: #{e}"
+        IO.puts "!! You have errors in the config file:"
+        for e <- errors, do: IO.puts "    * #{e}"
         print_help()
         System.halt(104)
     end

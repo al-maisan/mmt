@@ -44,6 +44,7 @@ defmodule Mmt do
                      parse[:dry_run], parse[:subject]})
       {:error, errors} ->
         for e <- errors, do: IO.puts "Error: #{e}"
+        print_help()
         System.halt(104)
     end
   end

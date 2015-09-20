@@ -175,14 +175,14 @@ defmodule Mmt do
     # Check for missing sections
     missing = (for k <- ["sender", "recipients"], counts[k] == nil, do: k)
       |> Enum.sort
-    if Enum.count(missing) > 1 do
+    if Enum.count(missing) > 0 do
       error = "missing sections: '" <> Enum.join(missing, ", ") <> "'"
       errors = [error | errors]
     end
 
     # Check for repeating sections
     repeating = Enum.filter(counts, fn({_k, v}) -> v > 1 end)
-    if Enum.count(repeating) > 1 do
+    if Enum.count(repeating) > 0 do
       repeating = (for {k, _v} <- repeating, do: k) |> Enum.sort
       error = "repeating sections: '" <> Enum.join(repeating, ", ") <> "'"
       errors = [error | errors]

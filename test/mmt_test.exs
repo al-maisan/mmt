@@ -12,6 +12,17 @@ defmodule MmtTest do
   end
 
 
+  test "check_config() complains about single missing section" do
+    config = """
+      [a]
+      [recipients]
+      [b]
+      """
+    actual = Mmt.check_config(config)
+    assert {:error, ["missing sections: 'sender'"]} == actual
+  end
+
+
   test "check_config() complains about repeating sections" do
     config = """
       [sender]
@@ -21,6 +32,18 @@ defmodule MmtTest do
       """
     actual = Mmt.check_config(config)
     assert {:error, ["repeating sections: 'recipients, sender'"]} == actual
+  end
+
+
+  test "check_config() complains about single repeating section" do
+    config = """
+      [recipients]
+      [sender]
+      abc=xyz
+      [recipients]
+      """
+    actual = Mmt.check_config(config)
+    assert {:error, ["repeating sections: 'recipients'"]} == actual
   end
 
 

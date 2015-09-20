@@ -185,12 +185,17 @@ defmodule MmtFilesTest do
 
   @tag content: """
     # Easy version
+    [sender]
+    rts@example.com=Frodo Baggins
+    [recipients]
     jd@example.com=John Doe III
     mm@gmail.com=Mickey Mouse   # trailing comment!!
     """
   test "read_config() works", context do
-    expected = %{"jd@example.com" => ["John", "Doe III"],
-                 "mm@gmail.com" => ["Mickey", "Mouse"]}
+    expected = %{
+      "sender" => %{"rts@example.com" => ["Frodo", "Baggins"]},
+      "recipients" => %{"jd@example.com" => ["John", "Doe III"],
+                        "mm@gmail.com" => ["Mickey", "Mouse"]}}
     {:ok, data} = File.open(context[:fpath],
                             fn(f) -> IO.binread(f, :all) end)
     actual = Mmt.read_config(data)
@@ -201,13 +206,18 @@ defmodule MmtFilesTest do
   @tag content: """
     # config file with repeating keys (email addresses)
         # dangling comment
+    [sender]
+    rts@example.com=Frodo Baggins
+    [recipients]
     abx.fgh@exact.ly=Éso Pita
     fheh@fphfdd.cc=Gulliver Jöllo
     abx.fgh@exact.ly=Charly De Gaulle
     """
   test "read_config() with repeated keys", context do
-    expected = %{"abx.fgh@exact.ly" => ["Charly", "De Gaulle"],
-                 "fheh@fphfdd.cc" => ["Gulliver", "Jöllo"]}
+    expected = %{
+      "sender" => %{"rts@example.com" => ["Frodo", "Baggins"]},
+      "recipients" => %{"abx.fgh@exact.ly" => ["Charly", "De Gaulle"],
+                        "fheh@fphfdd.cc" => ["Gulliver", "Jöllo"]}}
     {:ok, data} = File.open(context[:fpath],
                             fn(f) -> IO.binread(f, :all) end)
     actual = Mmt.read_config(data)

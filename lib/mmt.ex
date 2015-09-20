@@ -104,19 +104,20 @@ defmodule Mmt do
   """
   def do_mmt({tp, config, dr, subj}) do
     {:ok, template} = File.open(tp, fn(f) -> IO.binread(f, :all) end)
-    who = read_config(config)
+    config = read_config(config)
     mails = Enum.map(
-      who, fn {ea, [fna, lna]} -> prep_email({template, ea, fna, lna}) end)
+      config["recipients"],
+      fn {ea, [fna, lna]} -> prep_email({template, ea, fna, lna}) end)
 
     if dr do
       IO.puts(do_dryrun(mails, subj))
     else
-      do_send(mails, subj)
+      do_send(mails, subj, config["sender"])
     end
   end
 
 
-  def do_send(_m, _s) do
+  def do_send(_m, _subj, _sender) do
   end
 
 
@@ -156,6 +157,16 @@ defmodule Mmt do
   addresses and the values are the full names.
   """
   def read_config(config) do
+    { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")
+    content = Regex.scan(rx, config, [capture: :all_but_first])
+    [sender] = for [k, v] <- content, k == "sender", do: v
+    [recipients] = for [k, v] <- content, k == "recipients", do: v
+    sender = read_single_config_section(sender)
+    recipients = read_single_config_section(recipients)
+    %{"sender" => sender, "recipients" => recipients}
+  end
+
+  def read_single_config_section(config) do
     String.split(config, "\n")
     |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
     |> Enum.filter(&String.contains?(&1, "="))

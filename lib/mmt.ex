@@ -166,6 +166,7 @@ defmodule Mmt do
     %{"sender" => sender, "recipients" => recipients}
   end
 
+
   def read_single_config_section(config) do
     String.split(config, "\n")
     |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
@@ -181,8 +182,8 @@ defmodule Mmt do
 
 
   @doc """
-  Returns either :ok or {:error, message} if the config file is correct
-  or faulty.
+  Returns :ok for correct config files and {:error, [messages]} for broken
+  config files.
   """
   def check_config(config) do
     { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")

@@ -1,4 +1,4 @@
-defmodule Crypto do
+defmodule GCrypto do
   @moduledoc """
   key / crypto functions
   """
@@ -17,8 +17,8 @@ defmodule Crypto do
     |> String.split("\n")
     # filter valid UIDs
     |> Enum.filter(fn x -> Regex.match?(~r/^uid:[-oqmfuws]:/, x) end)
-    # filter UIDs that are basded on email addresses
-    |> Enum.filter(fn x -> Regex.match?(~r/>:$/, x) end)
+    # filter UIDs that are based on email addresses
+    |> Enum.filter(fn x -> Regex.match?(~r/<[^>]+@[^>]+>:$/, x) end)
     # extract the email addresses
     |> Enum.map(fn x -> Regex.replace(~r/^.+<([^>]+)>:$/, x, "\\1") end)
     # make unique

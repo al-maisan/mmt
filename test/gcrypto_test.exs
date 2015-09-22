@@ -1,6 +1,6 @@
-defmodule CryptoTest do
+defmodule GCryptoTest do
   use ExUnit.Case
-  doctest Crypto
+  doctest GCrypto
 
   @gpg_out """
   sub:f:1024:16:2B950D93B5252E67:1077658925::::::e:
@@ -40,6 +40,7 @@ defmodule CryptoTest do
   uid:f::::1242284167::D1B1C88C4725C9174B709CD878B46CCA54EE4E2F::Stuart Bishop <stuart@stuartbishop.net>:
   uid:f::::1242284167::C6047BBA854F25A940F76AAE2AC4678C53A33BEF::Stuart Bishop <stub@ubuntu.com>:
   uid:f::::1153318735::585135D671CE7D8BCE2582A013C4D91240D139B5::Stuart Bishop <stub@ubuntu.com>:
+  uid:f::::1239187659::CD061BF38BF6005CB58ECB0192009F228460BFA2::Dave P Martin </o=arm/ou=EMEA/cn=Recipients/cn=davem>:
   """
 
   test "filter_uids()" do
@@ -52,7 +53,7 @@ defmodule CryptoTest do
       "stub@ubuntu.com", "tim.penhey@canonical.com", "tim@canonical.com",
       "tim@penhey.net"]
 
-    actual = Crypto.filter_uids(@gpg_out)
+    actual = GCrypto.filter_uids(@gpg_out)
     assert expected == actual
   end
 end

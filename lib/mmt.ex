@@ -142,8 +142,8 @@ defmodule Mmt do
 
 
   def construct_cmd(path, sender, subj, addr) do
-    [{ea, nl}] = Map.to_list(sender)
-    header = "\"From: #{Enum.join(nl, " ")} <#{ea}>\""
+    [{eaddr, name}] = Map.to_list(sender)
+    header = "\"From: #{name} <#{eaddr}>\""
     cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> addr
     to_char_list(cmd)
   end

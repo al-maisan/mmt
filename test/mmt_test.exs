@@ -4,7 +4,7 @@ defmodule MmtTest do
 
   test "construct_cmd()" do
     path = "/tmp/mmt.kTuJU.eml"
-    sender = %{"mmt@chlo.cc" => ["Frodo", "Baggins"]}
+    sender = %{"mmt@chlo.cc" => "Frodo Baggins"}
     subj = "hello from mmt"
     addr = "r2@ahfdo.cc"
     expected = 'cat /tmp/mmt.kTuJU.eml | mail -a "From: Frodo Baggins <mmt@chlo.cc>" -s "hello from mmt" r2@ahfdo.cc'

@@ -118,7 +118,7 @@ defmodule CfgFilesTest do
     """
   test "read_config() works", context do
     expected = %{
-      "sender" => %{"rts@example.com" => ["Frodo", "Baggins"]},
+      "sender" => %{"rts@example.com" => "Frodo Baggins"},
       "recipients" => %{"jd@example.com" => ["John", "Doe III"],
                         "mm@gmail.com" => ["Mickey", "Mouse"]}}
     {:ok, data} = File.open(context[:fpath],
@@ -140,7 +140,7 @@ defmodule CfgFilesTest do
     """
   test "read_config() with repeated keys", context do
     expected = %{
-      "sender" => %{"rts@example.com" => ["Frodo", "Baggins"]},
+      "sender" => %{"rts@example.com" => "Frodo Baggins"},
       "recipients" => %{"abx.fgh@exact.ly" => ["Charly", "De Gaulle"],
                         "fheh@fphfdd.cc" => ["Gulliver", "Jöllo"]}}
     {:ok, data} = File.open(context[:fpath],

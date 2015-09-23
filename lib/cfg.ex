@@ -13,21 +13,25 @@ defmodule Cfg do
     content = Regex.scan(rx, config, [capture: :all_but_first])
     [sender] = for [k, v] <- content, k == "sender", do: v
     [recipients] = for [k, v] <- content, k == "recipients", do: v
-    sender = read_single_config_section(sender)
-    recipients = read_single_config_section(recipients)
+    sender = read_single_config_section("sender", sender)
+    recipients = read_single_config_section("recipients", recipients)
     %{"sender" => sender, "recipients" => recipients}
   end
 
 
-  def read_single_config_section(config) do
-    String.split(config, "\n")
+  def read_single_config_section(section, content) do
+    String.split(content, "\n")
     |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
     |> Enum.filter(&String.contains?(&1, "="))
     |> Enum.map(
       fn line ->
         [key, value] = String.split(line, "=")
         key = String.strip(key)
-        {key, String.split(value, ~r{\s}, parts: 2, trim: true)}
+        value = case section do
+          "recipients" -> String.split(value, ~r{\s}, parts: 2, trim: true)
+          _ -> String.strip(value)
+        end
+        {key, value}
       end)
     |> Enum.into(Map.new)
   end

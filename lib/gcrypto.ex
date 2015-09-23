@@ -3,17 +3,18 @@ defmodule GCrypto do
   key / crypto functions
   """
 
-  @list_uids_cmd 'gpg --batch --no-tty --status-fd 2 --with-colons --list-public-keys --fixed-list-mode'
-
-  def get_valid_uids(cmd \\ @list_uids_cmd) do
-    :os.cmd(cmd)
-    |> to_string
-    |> filter_uids
+  def get_valid_uids(cmd) do
+    {uids, ec} = System.cmd("gpg", ["--charset", "utf-8", "--display-charset", "utf-8", "--batch", "--no-tty", "--status-fd", "2", "--with-colons", "--list-public-keys", "--fixed-list-mode"], [into: [], stderr_to_stdout: true])
+    case ec do
+      0 -> {:ok. filter_uids(uids)}
+      _ -> {:error, {uids, ec}}
+    end
   end
 
 
   def filter_uids(uids) do
     uids
+    |> Enum.join
     |> String.split("\n")
     # filter valid UIDs
     |> Enum.filter(fn x -> Regex.match?(~r/^uid:[-oqmfuws]:/, x) end)
@@ -26,5 +27,14 @@ defmodule GCrypto do
     |> Set.to_list
     # .. and sort
     |> Enum.sort
+  end
+
+
+  def encrypt(path, recipient) do
+    {out, ec} = System.cmd("gpg", ["--batch", "--no-tty", "--status-fd", "2", "-r", recipient, "-e", path], [into: [], stderr_to_stdout: true])
+    case ec do
+      0 -> {:ok, path <> ".gpg"}
+      _ -> {:error, {out, ec}}
+    end
   end
 end

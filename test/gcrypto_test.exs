@@ -2,7 +2,7 @@ defmodule GCryptoTest do
   use ExUnit.Case
   doctest GCrypto
 
-  @gpg_out """
+  @gpg_out ["""
   sub:f:1024:16:2B950D93B5252E67:1077658925::::::e:
   pub:-:1024:17:E9149F67EEA6AD6A:1155934878:::-:::scSC:
   uid:-::::1155934878::B38B08533690879502A95A76A0C1EC8FF819EC6B::http\x3a//bazaar-vcs.org package repository:
@@ -41,7 +41,7 @@ defmodule GCryptoTest do
   uid:f::::1242284167::C6047BBA854F25A940F76AAE2AC4678C53A33BEF::Stuart Bishop <stub@ubuntu.com>:
   uid:f::::1153318735::585135D671CE7D8BCE2582A013C4D91240D139B5::Stuart Bishop <stub@ubuntu.com>:
   uid:f::::1239187659::CD061BF38BF6005CB58ECB0192009F228460BFA2::Dave P Martin </o=arm/ou=EMEA/cn=Recipients/cn=davem>:
-  """
+  """]
 
   test "filter_uids()" do
     expected = ["barry.warsaw@canonical.com", "barry@canonical.com",

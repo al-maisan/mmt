@@ -94,8 +94,6 @@ defmodule Mmt do
 
       Hello %FN% // %LN%,
       this is your email * 2: %EA%%EA%.
-
-      Thanks!
       """
     IO.puts help_text
   end

@@ -37,10 +37,9 @@ defmodule Mmt do
       print_help()
       System.halt(103)
     end
-    {:ok, config} = File.open(parse[:config_path],
-                            fn(f) -> IO.binread(f, :all) end)
+    {:ok, config} = File.open(parse[:config_path], fn(f) -> IO.binread(f, :all) end)
     {:ok, template} = File.open(parse[:template_path],
-                            fn(f) -> IO.binread(f, :all) end)
+                                fn(f) -> IO.binread(f, :all) end)
     case Cfg.check_config(config) do
       :ok -> do_mmt({template, config, parse[:dry_run], parse[:subject]})
       {:error, errors} ->
@@ -78,6 +77,8 @@ defmodule Mmt do
       # the first name, the rest is the surname
       [general]
       attachment1-name=%FN%-salary-info-for-September-2015
+      attachment-path=/tmp
+      encrypt-attachments=true
       [sender]
       rts@example.com=Frodo Baggins
       [recipients]

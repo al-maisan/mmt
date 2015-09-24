@@ -11,11 +11,19 @@ defmodule Cfg do
   def read_config(config) do
     { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")
     content = Regex.scan(rx, config, [capture: :all_but_first])
+
+    general = case (for [k, v] <- content, k == "general", do: v) do
+      [] -> %{}
+      [gdata] -> read_single_config_section("general", gdata)
+    end
+
     [sender] = for [k, v] <- content, k == "sender", do: v
-    [recipients] = for [k, v] <- content, k == "recipients", do: v
     sender = read_single_config_section("sender", sender)
+
+    [recipients] = for [k, v] <- content, k == "recipients", do: v
     recipients = read_single_config_section("recipients", recipients)
-    %{"sender" => sender, "recipients" => recipients}
+
+    %{"general" => general, "sender" => sender, "recipients" => recipients}
   end
 
 

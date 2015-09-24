@@ -110,6 +110,10 @@ defmodule CfgFilesTest do
 
   @tag content: """
     # Easy version
+    [general]
+    attachment1-name=%FN%-salary-info-for-Sep-2015
+    attachment-path=/tmp
+    encrypt-attachments=true
     [sender]
     rts@example.com=Frodo Baggins
     [recipients]
@@ -118,11 +122,13 @@ defmodule CfgFilesTest do
     """
   test "read_config() works", context do
     expected = %{
-      "sender" => %{"rts@example.com" => "Frodo Baggins"},
+      "general" => %{"attachment-path" => "/tmp",
+                     "attachment1-name" => "%FN%-salary-info-for-Sep-2015",
+                     "encrypt-attachments" => "true"},
       "recipients" => %{"jd@example.com" => {"01", ["John", "Doe III"]},
-                        "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
-    {:ok, data} = File.open(context[:fpath],
-                            fn(f) -> IO.binread(f, :all) end)
+                        "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}},
+      "sender" => %{"rts@example.com" => "Frodo Baggins"}}
+    {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
     actual = Cfg.read_config(data)
     assert actual == expected
   end
@@ -140,11 +146,11 @@ defmodule CfgFilesTest do
     """
   test "read_config() with repeated keys", context do
     expected = %{
+      "general" => %{},
       "sender" => %{"rts@example.com" => "Frodo Baggins"},
       "recipients" => %{"abx.fgh@exact.ly" => {"03", ["Charly", "De Gaulle"]},
                         "fheh@fphfdd.cc" => {"02", ["Gulliver", "Jöllo"]}}}
-    {:ok, data} = File.open(context[:fpath],
-                            fn(f) -> IO.binread(f, :all) end)
+    {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
     actual = Cfg.read_config(data)
     assert actual == expected
   end

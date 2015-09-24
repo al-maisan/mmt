@@ -25,13 +25,17 @@ defmodule Cfg do
     |> Enum.filter(&String.contains?(&1, "="))
     |> Enum.map(
       fn line ->
-        [key, value] = String.split(line, "=")
-        key = String.strip(key)
-        value = case section do
-          "recipients" -> String.split(value, ~r{\s}, parts: 2, trim: true)
-          _ -> String.strip(value)
+        [key, value] = String.split(line, ~r{\s*=\s*})
+        case section do
+          "recipients" ->
+            [id, key] = String.split(key, ~r{\s*;\s*}, parts: 2, trim: true)
+            value = String.split(value, ~r{\s+}, parts: 2, trim: true)
+            {key, {id, value}}
+          _ ->
+            key = String.strip(key)
+            value = String.strip(value)
+            {key, value}
         end
-        {key, value}
       end)
     |> Enum.into(Map.new)
   end

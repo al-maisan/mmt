@@ -113,14 +113,14 @@ defmodule CfgFilesTest do
     [sender]
     rts@example.com=Frodo Baggins
     [recipients]
-    jd@example.com=John Doe III
-    mm@gmail.com=Mickey Mouse   # trailing comment!!
+    01; jd@example.com=John    Doe III
+    02; mm@gmail.com=Mickey     Mouse   # trailing comment!!
     """
   test "read_config() works", context do
     expected = %{
       "sender" => %{"rts@example.com" => "Frodo Baggins"},
-      "recipients" => %{"jd@example.com" => ["John", "Doe III"],
-                        "mm@gmail.com" => ["Mickey", "Mouse"]}}
+      "recipients" => %{"jd@example.com" => {"01", ["John", "Doe III"]},
+                        "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
     {:ok, data} = File.open(context[:fpath],
                             fn(f) -> IO.binread(f, :all) end)
     actual = Cfg.read_config(data)
@@ -134,15 +134,15 @@ defmodule CfgFilesTest do
     [sender]
     rts@example.com=Frodo Baggins
     [recipients]
-    abx.fgh@exact.ly=Éso Pita
-    fheh@fphfdd.cc=Gulliver Jöllo
-    abx.fgh@exact.ly=Charly De Gaulle
+    01; abx.fgh@exact.ly=Éso Pita
+    02; fheh@fphfdd.cc=Gulliver    Jöllo
+    03; abx.fgh@exact.ly=   Charly      De Gaulle
     """
   test "read_config() with repeated keys", context do
     expected = %{
       "sender" => %{"rts@example.com" => "Frodo Baggins"},
-      "recipients" => %{"abx.fgh@exact.ly" => ["Charly", "De Gaulle"],
-                        "fheh@fphfdd.cc" => ["Gulliver", "Jöllo"]}}
+      "recipients" => %{"abx.fgh@exact.ly" => {"03", ["Charly", "De Gaulle"]},
+                        "fheh@fphfdd.cc" => {"02", ["Gulliver", "Jöllo"]}}}
     {:ok, data} = File.open(context[:fpath],
                             fn(f) -> IO.binread(f, :all) end)
     actual = Cfg.read_config(data)

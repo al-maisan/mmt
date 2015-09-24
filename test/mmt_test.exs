@@ -2,6 +2,29 @@ defmodule MmtTest do
   use ExUnit.Case
   doctest Mmt
 
+
+  test "prep_emails()" do
+    config = """
+      # config file with repeating keys (email addresses)
+          # dangling comment
+      [sender]
+      rts@example.com=Frodo Baggins
+      [recipients]
+      01; abx.fgh@exact.ly=Éso Pita
+      02; fheh@fphfdd.cc=Gulliver    Jöllo
+      03; abx.fgh@exact.ly=   Charly      De Gaulle
+      """
+    template = """
+      Hello %FN% // %LN% // %EA%
+      """
+    expected = [
+      {"abx.fgh@exact.ly", "Hello Charly // De Gaulle // abx.fgh@exact.ly\n"},
+      {"fheh@fphfdd.cc", "Hello Gulliver // Jöllo // fheh@fphfdd.cc\n"}]
+    actual = Mmt.prep_emails(config, template)
+    assert expected == actual
+  end
+
+
   test "construct_cmd()" do
     path = "/tmp/mmt.kTuJU.eml"
     sender = %{"mmt@chlo.cc" => "Frodo Baggins"}

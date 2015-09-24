@@ -37,11 +37,12 @@ defmodule Mmt do
       print_help()
       System.halt(103)
     end
-    {:ok, data} = File.open(parse[:config_path],
+    {:ok, config} = File.open(parse[:config_path],
                             fn(f) -> IO.binread(f, :all) end)
-    case Cfg.check_config(data) do
-      :ok -> do_mmt({parse[:template_path], data,
-                     parse[:dry_run], parse[:subject]})
+    {:ok, template} = File.open(parse[:template_path],
+                            fn(f) -> IO.binread(f, :all) end)
+    case Cfg.check_config(config) do
+      :ok -> do_mmt({template, config, parse[:dry_run], parse[:subject]})
       {:error, errors} ->
         IO.puts "!! You have errors in the config file:"
         for e <- errors, do: IO.puts "    * #{e}"
@@ -75,11 +76,13 @@ defmodule Mmt do
       # anything that follows a hash is a comment
       # email address is to the left of the '=' sign, first word after is
       # the first name, the rest is the surname
+      [general]
+      attachment1-name=%FN%-salary-info-for-September-2015
       [sender]
       rts@example.com=Frodo Baggins
       [recipients]
-      jd@example.com=John Doe III
-      mm@gmail.com=Mickey Mouse   # trailing comment!!
+      01; jd@example.com=John Doe III
+      02; mm@gmail.com=Mickey Mouse   # trailing comment!!
       """
     IO.puts help_text
   end
@@ -102,13 +105,8 @@ defmodule Mmt do
   Send out the emails given the template path, configuration path and
   dry-run parameters.
   """
-  def do_mmt({tp, config, dr, subj}) do
-    {:ok, template} = File.open(tp, fn(f) -> IO.binread(f, :all) end)
-    config = Cfg.read_config(config)
-    mails = Enum.map(
-      config["recipients"],
-      fn {ea, [fna, lna]} -> prep_email({template, ea, fna, lna}) end)
-
+  def do_mmt({template, config, dr, subj}) do
+    mails = prep_emails(config, template)
     if dr do
       IO.puts(do_dryrun(mails, subj))
     else
@@ -163,6 +161,14 @@ defmodule Mmt do
       ---
       """
       end)
+  end
+
+
+  def prep_emails(config, template) do
+    config = Cfg.read_config(config)
+    Enum.map(
+      config["recipients"],
+      fn {ea, {_, [fna, lna]}} -> prep_email({template, ea, fna, lna}) end)
   end
 
 

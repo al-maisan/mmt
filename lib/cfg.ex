@@ -17,13 +17,10 @@ defmodule Cfg do
       [gdata] -> read_single_config_section("general", gdata)
     end
 
-    [sender] = for [k, v] <- content, k == "sender", do: v
-    sender = read_single_config_section("sender", sender)
-
     [recipients] = for [k, v] <- content, k == "recipients", do: v
     recipients = read_single_config_section("recipients", recipients)
 
-    %{"general" => general, "sender" => sender, "recipients" => recipients}
+    %{"general" => general, "recipients" => recipients}
   end
 
 
@@ -64,7 +61,7 @@ defmodule Cfg do
       fn(x, acc) -> {x, Dict.put(acc, x, Dict.get(acc, x, 0) + 1)} end)
 
     # Check for missing sections
-    missing = (for k <- ["sender", "recipients"], counts[k] == nil, do: k)
+    missing = (for k <- ["recipients"], counts[k] == nil, do: k)
       |> Enum.sort
     if Enum.count(missing) > 0 do
       error = "missing sections: '" <> Enum.join(missing, ", ") <> "'"
@@ -77,18 +74,6 @@ defmodule Cfg do
       repeating = (for {k, _v} <- repeating, do: k) |> Enum.sort
       error = "repeating sections: '" <> Enum.join(repeating, ", ") <> "'"
       errors = [error | errors]
-    end
-
-    # Check for single sender value
-    if not "sender" in repeating && not "sender" in missing do
-      [sender_value] = for [k, v] <- content, k == "sender", do: v
-      senders = String.split(sender_value, "\n")
-      |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
-      |> Enum.filter(&String.contains?(&1, "="))
-      |> Enum.count
-      if senders != 1 do
-        errors = ["the sender section requires exactly one entry" | errors]
-      end
     end
 
     if Enum.count(errors) > 0 do

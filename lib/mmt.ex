@@ -79,8 +79,8 @@ defmodule Mmt do
       attachment1-name=%FN%-salary-info-for-September-2015
       attachment-path=/tmp
       encrypt-attachments=true
-      [sender]
-      rts@example.com=Frodo Baggins
+      sender_email=rts@example.com
+      sender_name=Frodo Baggins
       [recipients]
       01; jd@example.com=John Doe III
       02; mm@gmail.com=Mickey Mouse   # trailing comment!!
@@ -109,7 +109,7 @@ defmodule Mmt do
     if dr do
       IO.puts(do_dryrun(mails, subj))
     else
-      do_send(mails, subj, config["sender"])
+      do_send(mails, subj, config["general"])
     end
   end
 
@@ -129,17 +129,18 @@ defmodule Mmt do
   the 'mail' command via a shell.
   """
   def do_send([], _, _), do: nil
-  def do_send([{addr, body}|mails], subj, sender) do
+  def do_send([{addr, body}|mails], subj, general) do
     path = write_file(String.rstrip(body))
-    cmd = construct_cmd(path, sender, subj, addr)
+    cmd = construct_cmd(path, general, subj, addr)
     :os.cmd(cmd)
     System.cmd("rm", ["-f", path])
-    do_send(mails, subj, sender)
+    do_send(mails, subj, general)
   end
 
 
-  def construct_cmd(path, sender, subj, addr) do
-    [{eaddr, name}] = Map.to_list(sender)
+  def construct_cmd(path, general, subj, addr) do
+    eaddr = Map.get(general, "sender_email", "no@return.email")
+    name = Map.get(general, "sender_name", "Do not reply")
     header = "\"From: #{name} <#{eaddr}>\""
     cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> addr
     to_char_list(cmd)

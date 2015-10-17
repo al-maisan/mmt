@@ -8,18 +8,7 @@ defmodule CfgTest do
       [b]
       """
     actual = Cfg.check_config(config)
-    assert {:error, ["missing sections: 'recipients, sender'"]} == actual
-  end
-
-
-  test "check_config() complains about single missing section" do
-    config = """
-      [a]
-      [recipients]
-      [b]
-      """
-    actual = Cfg.check_config(config)
-    assert {:error, ["missing sections: 'sender'"]} == actual
+    assert {:error, ["missing sections: 'recipients'"]} == actual
   end
 
 
@@ -53,29 +42,7 @@ defmodule CfgTest do
       [b][a]
       """
     actual = Cfg.check_config(config)
-    assert {:error, ["missing sections: 'recipients, sender'", "repeating sections: 'a, b'"]} == actual
-  end
-
-
-  test "check_config() complains about missing sender entry" do
-    config = """
-      [sender]
-      [recipients]
-      """
-    actual = Cfg.check_config(config)
-    assert {:error, ["the sender section requires exactly one entry"]} == actual
-  end
-
-
-  test "check_config() complains about more than one sender entry" do
-    config = """
-      [sender]
-      abc@def.hi=E One
-      abd@def.hi=E Two
-      [recipients]
-      """
-    actual = Cfg.check_config(config)
-    assert {:error, ["the sender section requires exactly one entry"]} == actual
+    assert {:error, ["missing sections: 'recipients'", "repeating sections: 'a, b'"]} == actual
   end
 
 
@@ -114,8 +81,8 @@ defmodule CfgFilesTest do
     attachment1-name=%FN%-salary-info-for-Sep-2015
     attachment-path=/tmp
     encrypt-attachments=true
-    [sender]
-    rts@example.com=Frodo Baggins
+    sender_email=rts@example.com
+    sender_name=Frodo Baggins
     [recipients]
     01; jd@example.com=John    Doe III
     02; mm@gmail.com=Mickey     Mouse   # trailing comment!!
@@ -124,10 +91,11 @@ defmodule CfgFilesTest do
     expected = %{
       "general" => %{"attachment-path" => "/tmp",
                      "attachment1-name" => "%FN%-salary-info-for-Sep-2015",
-                     "encrypt-attachments" => "true"},
+                     "encrypt-attachments" => "true",
+                     "sender_email" => "rts@example.com",
+                     "sender_name" => "Frodo Baggins"},
       "recipients" => %{"jd@example.com" => {"01", ["John", "Doe III"]},
-                        "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}},
-      "sender" => %{"rts@example.com" => "Frodo Baggins"}}
+                        "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
     {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
     actual = Cfg.read_config(data)
     assert actual == expected
@@ -137,8 +105,9 @@ defmodule CfgFilesTest do
   @tag content: """
     # config file with repeating keys (email addresses)
         # dangling comment
-    [sender]
-    rts@example.com=Frodo Baggins
+    [general]
+    sender_email=rts@example.com
+    sender_name=Frodo Baggins
     [recipients]
     01; abx.fgh@exact.ly=Éso Pita
     02; fheh@fphfdd.cc=Gulliver    Jöllo
@@ -146,8 +115,8 @@ defmodule CfgFilesTest do
     """
   test "read_config() with repeated keys", context do
     expected = %{
-      "general" => %{},
-      "sender" => %{"rts@example.com" => "Frodo Baggins"},
+      "general" => %{"sender_email" => "rts@example.com",
+                     "sender_name" => "Frodo Baggins"},
       "recipients" => %{"abx.fgh@exact.ly" => {"03", ["Charly", "De Gaulle"]},
                         "fheh@fphfdd.cc" => {"02", ["Gulliver", "Jöllo"]}}}
     {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)

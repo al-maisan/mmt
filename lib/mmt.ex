@@ -41,7 +41,9 @@ defmodule Mmt do
     {:ok, template} = File.open(parse[:template_path],
                                 fn(f) -> IO.binread(f, :all) end)
     case Cfg.check_config(config) do
-      :ok -> do_mmt({template, config, parse[:dry_run], parse[:subject]})
+      :ok ->
+        config = Cfg.read_config(config)
+        do_mmt({template, config, parse[:dry_run], parse[:subject]})
       {:error, errors} ->
         IO.puts "!! You have errors in the config file:"
         for e <- errors, do: IO.puts "    * #{e}"
@@ -105,11 +107,38 @@ defmodule Mmt do
   dry-run parameters.
   """
   def do_mmt({template, config, dr, subj}) do
-    mails = prep_emails(config, template)
-    if dr do
-      IO.puts(do_dryrun(mails, subj))
+    case check_keys(config) do
+      {:ok, _} ->
+        mails = prep_emails(config, template)
+        if dr do
+          IO.puts(do_dryrun(mails, subj))
+        else
+          do_send(mails, subj, config["general"])
+        end
+      {:error, error} ->
+        IO.puts error
+        System.halt(105)
+    end
+  end
+
+
+  def check_keys(config, uids \\ nil) do
+    if config["general"]["encrypt-attachments"] == true do
+      # make sure we have gpg keys for all recipients
+      if !uids do
+        uids = GCrypto.get_valid_uids()
+      end
+      recipients = Dict.keys(config["recipients"])
+      missing_keys = Set.difference(Enum.into(recipients, HashSet.new),
+                                    Enum.into(uids, HashSet.new))
+      if Set.size(missing_keys) > 0 do
+        error = "No gpg keys for:\n" <> Enum.reduce(Enum.map(missing_keys, fn x -> "  #{x}\n" end), "", fn a, b -> a <> b end)
+        {:error, error}
+      else
+        {:ok, "all set!"}
+      end
     else
-      do_send(mails, subj, config["general"])
+      {:ok, "attachments not crypted"}
     end
   end
 
@@ -165,7 +194,6 @@ defmodule Mmt do
 
 
   def prep_emails(config, template) do
-    config = Cfg.read_config(config)
     Enum.map(
       config["recipients"],
       fn {ea, {_, [fna, lna]}} -> prep_email({template, ea, fna, lna}) end)

@@ -36,13 +36,36 @@ defmodule Cfg do
             [id, key] = String.split(key, ~r{\s*;\s*}, parts: 2, trim: true)
             value = String.split(value, ~r{\s+}, parts: 2, trim: true)
             {key, {id, value}}
-          _ ->
-            key = String.strip(key)
-            value = String.strip(value)
-            {key, value}
+          _ -> {String.strip(key), convert_value(String.strip(value))}
         end
       end)
     |> Enum.into(Map.new)
+  end
+
+
+  @doc """
+  Converts booleans, integers and floats to their proper values; returns other
+  strings unmodified
+  """
+  def convert_value(string) do
+    case Regex.run(~r/^\s*(true|false|\d+|\d+\.\d+)\s*$/, string) do
+      nil -> string
+      [_, "false"] -> false
+      [_, "true"] -> true
+      [_, num] ->
+        case String.contains?(num, ".") do
+          true ->
+            case Float.parse(num) do
+              :error -> :error
+              {float, _} -> float
+            end
+          false ->
+            case Integer.parse(num) do
+              :error -> :error
+              {int, _} -> int
+            end
+        end
+    end
   end
 
 

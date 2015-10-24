@@ -55,6 +55,36 @@ defmodule CfgTest do
     actual = Cfg.check_config(config)
     assert :ok == actual
   end
+
+
+  test "convert_value() with true" do
+    assert true == Cfg.convert_value("true")
+    assert true == Cfg.convert_value("   true")
+    assert true == Cfg.convert_value("   true   ")
+  end
+
+
+  test "convert_value() with false" do
+    assert false == Cfg.convert_value("false")
+    assert false == Cfg.convert_value("   false")
+    assert false == Cfg.convert_value("   false   ")
+  end
+
+
+  test "convert_value() with integers" do
+    assert 123 == Cfg.convert_value("123")
+    assert 456 == Cfg.convert_value("   456")
+    assert 789 == Cfg.convert_value("   789   ")
+  end
+
+
+  test "convert_value() with flotas" do
+    assert 12.3 == Cfg.convert_value("12.3")
+    assert 4.56 == Cfg.convert_value("   4.56")
+    assert 0.789 == Cfg.convert_value("   0.789   ")
+  end
+
+
 end
 
 
@@ -91,7 +121,7 @@ defmodule CfgFilesTest do
     expected = %{
       "general" => %{"attachment-path" => "/tmp",
                      "attachment1-name" => "%FN%-salary-info-for-Sep-2015",
-                     "encrypt-attachments" => "true",
+                     "encrypt-attachments" => true,
                      "sender_email" => "rts@example.com",
                      "sender_name" => "Frodo Baggins"},
       "recipients" => %{"jd@example.com" => {"01", ["John", "Doe III"]},

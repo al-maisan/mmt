@@ -223,7 +223,7 @@ defmodule Mmt do
   end
 
 
-  def prep_attachment({config, aid, fna, lna}) do
+  def prep_attachment({_config, _aid, _fna, _lna}) do
   end
 
 

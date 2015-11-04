@@ -8,6 +8,7 @@ defmodule Mmt do
       argv, strict: [help: :boolean, dry_run: :boolean,
                      subject: :string, template_path: :string,
                      config_path: :string, sample_config: :boolean,
+                     do_attachments: :boolean,
                      sample_template: :boolean])
 
     if parse[:help] do
@@ -43,7 +44,8 @@ defmodule Mmt do
     case Cfg.check_config(config) do
       :ok ->
         config = Cfg.read_config(config)
-        do_mmt({template, config, parse[:dry_run], parse[:subject]})
+        do_mmt({template, config, parse[:dry_run], parse[:subject],
+                parse[:do_attachments]})
       {:error, errors} ->
         IO.puts "!! You have errors in the config file:"
         for e <- errors, do: IO.puts "    * #{e}"
@@ -103,21 +105,24 @@ defmodule Mmt do
 
 
   @doc """
-  Send out the emails given the template path, configuration path and
-  dry-run parameters.
+  Send out the emails given the template, configuration, dry-run flag,
+  subject line and the do-attachments flag.
   """
-  def do_mmt({template, config, dr, subj}) do
-    case check_keys(config) do
-      {:ok, _} ->
-        mails = prep_emails(config, template)
-        if dr do
-          IO.puts(do_dryrun(mails, subj))
-        else
-          do_send(mails, subj, config["general"])
-        end
-      {:error, error} ->
-        IO.puts error
-        System.halt(105)
+  def do_mmt({template, config, dr, subj, do_attmts}) do
+    if do_attmts do
+      case check_keys(config) do
+        {:ok, _} -> case check_attachments(config) do
+            {:ok, _} -> :ok
+            {:error, error} -> IO.puts error; System.halt(105)
+          end
+        {:error, error} -> IO.puts error; System.halt(106)
+      end
+    end
+    mails = prep_emails(config, template)
+    if dr do
+      IO.puts(do_dryrun(mails, subj))
+    else
+      do_send(mails, subj, config["general"])
     end
   end
 
@@ -140,6 +145,21 @@ defmodule Mmt do
     else
       {:ok, "attachments not crypted"}
     end
+  end
+
+
+  @doc """
+  Return a list of readable files in the given directory.
+  """
+  def list_files(_dir) do
+  end
+
+
+  @doc """
+  If we are to send out attachments, make sure they are all there and we can
+  read them.
+  """
+  def check_attachments(_config) do
   end
 
 
@@ -193,10 +213,17 @@ defmodule Mmt do
   end
 
 
+  @doc """
+  Generates the email bodies for all the recipients.
+  """
   def prep_emails(config, template) do
     Enum.map(
       config["recipients"],
       fn {ea, {_, [fna, lna]}} -> prep_email({template, ea, fna, lna}) end)
+  end
+
+
+  def prep_attachment({config, aid, fna, lna}) do
   end
 
 

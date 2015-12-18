@@ -125,7 +125,7 @@ defmodule CfgFilesTest do
     expected = %{
       "general" => %{"attachment-path" => "/tmp",
                      "attachment1-name" => "%FN%-salary-info-for-Sep-2015",
-                     "encrypt-attachments" => true,
+                     "encrypt-attachments" => "true",
                      "attachment-extension" => "pdf",
                      "sender-email" => "rts@example.com",
                      "sender-name" => "Frodo Baggins"},

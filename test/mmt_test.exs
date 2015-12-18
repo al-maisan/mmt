@@ -10,9 +10,13 @@ defmodule MmtTest do
       [sender]
       rts@example.com=Frodo Baggins
       [recipients]
-      01; abx.fgh@exact.ly=Éso Pita
-      02; fheh@fphfdd.cc=Gulliver    Jöllo
-      03; abx.fgh@exact.ly=   Charly      De Gaulle
+      abx.fgh@exact.ly=Éso Pita
+      fheh@fphfdd.cc=Gulliver    Jöllo
+      abx.fgh@exact.ly=   Charly      De Gaulle
+      [attachments]
+      abx.fgh@exact.ly=01
+      fheh@fphfdd.cc=02
+      abx.fgh@exact.ly=03
       """
     template = """
       Hello %FN% // %LN% // %EA%
@@ -51,7 +55,7 @@ defmodule MmtTest do
 
       Thanks!
       """
-    actual = Mmt.prep_email({template, "1@xy.com", "Not", "Needed"})
+    actual = Mmt.prep_email({template, "1@xy.com", "Not Needed"})
     assert {"1@xy.com", body} == actual
   end
 
@@ -69,7 +73,7 @@ defmodule MmtTest do
 
       Thanks!
       """
-    actual = Mmt.prep_email({template, "2@xy.com", "Goth", "Mox"})
+    actual = Mmt.prep_email({template, "2@xy.com", "Goth Mox"})
     assert {"2@xy.com", body} == actual
   end
 
@@ -87,7 +91,7 @@ defmodule MmtTest do
 
       Thanks!
       """
-    actual = Mmt.prep_email({template, "3@xy.com", "King", "Kong"})
+    actual = Mmt.prep_email({template, "3@xy.com", "King Kong"})
     assert {"3@xy.com", body} == actual
   end
 

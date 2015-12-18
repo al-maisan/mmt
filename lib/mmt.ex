@@ -223,7 +223,7 @@ defmodule Mmt do
   def prep_emails(config, template) do
     Enum.map(
       config["recipients"],
-      fn {ea, {_, [fna, lna]}} -> prep_email({template, ea, fna, lna}) end)
+      fn {email, name} -> prep_email({template, email, name}) end)
   end
 
 
@@ -236,11 +236,12 @@ defmodule Mmt do
   first and last name. Returns a 2-tuple containing the recipient's email
   address and the body.
   """
-  def prep_email({template, ea, fna, lna}) do
-    body = Regex.replace(~r/%EA%/, template, ea, global: true)
-    body = Regex.replace(~r/%FN%/, body, fna, global: true)
-    body = Regex.replace(~r/%LN%/, body, lna, global: true)
+  def prep_email({template, email, name}) do
+    body = Regex.replace(~r/%EA%/, template, email, global: true)
+    [fname, lname] = String.split(name, ~r{\s+}, parts: 2, trim: true)
+    body = Regex.replace(~r/%FN%/, body, fname, global: true)
+    body = Regex.replace(~r/%LN%/, body, lname, global: true)
 
-    {ea, body}
+    {email, body}
   end
 end

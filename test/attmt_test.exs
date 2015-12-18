@@ -17,6 +17,9 @@ defmodule AttmtFilesTest do
       File.touch!(path)
       File.chmod!(path, mode)
     end)
+    if context[:dirmode] != nil do
+      File.chmod!(tpath, context[:dirmode])
+    end
 
     on_exit fn ->
       System.cmd("rm", ["-rf", tpath])
@@ -84,6 +87,39 @@ defmodule AttmtFilesTest do
       Missing or unreadable attachment(s) in the #{context[:tpath]} directory:
           aa.pdf
           bb.pdf
+      """
+    assert Attmt.check_files(config) == {:error, error_msg}
+  end
+
+
+  @tag afs: []
+  test "check_files(), non-existent attachment path" do
+    config = %{
+      "general" => %{"attachment-path" => "/does/not/exist"},
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf"}}
+    error_msg = """
+      Missing or unreadable attachment path:
+          /does/not/exist
+      """
+    assert Attmt.check_files(config) == {:error, error_msg}
+  end
+
+
+  @tag afs: []
+  @tag dirmode: 0o255
+  test "check_files(), unreadable attachment path", context do
+    config = %{
+      "general" => %{"attachment-path" => context[:tpath]},
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf"}}
+    error_msg = """
+      Missing or unreadable attachment path:
+        #{context[:tpath]}
       """
     assert Attmt.check_files(config) == {:error, error_msg}
   end

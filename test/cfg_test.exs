@@ -108,14 +108,13 @@ defmodule CfgFilesTest do
   @tag content: """
     # Easy version
     [general]
-    attachment1-name=%FN%-salary-info-for-Sep-2015
+    attachment-name=%FN%-salary-info-for-Sep-2015
     attachment-path=/tmp
     encrypt-attachments=true
     sender-email=rts@example.com
     sender-name=Frodo Baggins
-    attachment-extension=pdf
     [recipients]
-    jd@example.com=John    Doe III
+    jd@example.com=John    Doe    III
     mm@gmail.com=Mickey     Mouse   # trailing comment!!
     [attachments]
     jd@example.com=aa
@@ -124,12 +123,11 @@ defmodule CfgFilesTest do
   test "read_config() works", context do
     expected = %{
       "general" => %{"attachment-path" => "/tmp",
-                     "attachment1-name" => "%FN%-salary-info-for-Sep-2015",
+                     "attachment-name" => "%FN%-salary-info-for-Sep-2015",
                      "encrypt-attachments" => "true",
-                     "attachment-extension" => "pdf",
                      "sender-email" => "rts@example.com",
                      "sender-name" => "Frodo Baggins"},
-      "recipients" => %{"jd@example.com" => "John    Doe III",
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
                         "mm@gmail.com" => "Mickey     Mouse"},
       "attachments" => %{"jd@example.com" => "aa",
                          "mm@gmail.com" => "bb"}}

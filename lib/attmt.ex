@@ -9,7 +9,7 @@ defmodule Attmt do
    * all required attachment files exists and we are authorised to read them
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
-  def check_attachments(config) do
+  def check_attachments(_config) do
   end
 
 
@@ -17,7 +17,7 @@ defmodule Attmt do
   Make sure the configuration relating to attachments is correct
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
-  def check_config(config) do
+  def check_config(_config) do
   end
 
 
@@ -26,6 +26,6 @@ defmodule Attmt do
   to read them.
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
-  def check_files(config) do
+  def check_files(_config) do
   end
 end

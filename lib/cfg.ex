@@ -35,29 +35,28 @@ defmodule Cfg do
   Converts booleans, integers and floats to their proper values; returns other
   strings unmodified
   """
-  def convert_value(string) do
-    case string do
-      nil -> nil
-      _ -> case Regex.run(~r/^\s*(true|false|\d+|\d+\.\d+)\s*$/, string) do
-        nil -> string
-        [_, "false"] -> false
-        [_, "true"] -> true
-        [_, num] ->
-          case String.contains?(num, ".") do
-            true ->
-              case Float.parse(num) do
-                :error -> :error
-                {float, _} -> float
-              end
-            false ->
-              case Integer.parse(num) do
-                :error -> :error
-                {int, _} -> int
-              end
-          end
-      end
+  def convert_value(v) when is_binary(v) do
+    case Regex.run(~r/^\s*(true|false|\d+|\d+\.\d+)\s*$/, v) do
+      nil -> v
+      [_, "false"] -> false
+      [_, "true"] -> true
+      [_, num] ->
+        case String.contains?(num, ".") do
+          true ->
+            case Float.parse(num) do
+              :error -> :error
+              {float, _} -> float
+            end
+          false ->
+            case Integer.parse(num) do
+              :error -> :error
+              {int, _} -> int
+            end
+        end
     end
   end
+
+  def convert_value(v) do v end
 
 
   @doc """

@@ -35,23 +35,26 @@ defmodule Cfg do
   strings unmodified
   """
   def convert_value(string) do
-    case Regex.run(~r/^\s*(true|false|\d+|\d+\.\d+)\s*$/, string) do
-      nil -> string
-      [_, "false"] -> false
-      [_, "true"] -> true
-      [_, num] ->
-        case String.contains?(num, ".") do
-          true ->
-            case Float.parse(num) do
-              :error -> :error
-              {float, _} -> float
-            end
-          false ->
-            case Integer.parse(num) do
-              :error -> :error
-              {int, _} -> int
-            end
-        end
+    case string do
+      nil -> nil
+      _ -> case Regex.run(~r/^\s*(true|false|\d+|\d+\.\d+)\s*$/, string) do
+        nil -> string
+        [_, "false"] -> false
+        [_, "true"] -> true
+        [_, num] ->
+          case String.contains?(num, ".") do
+            true ->
+              case Float.parse(num) do
+                :error -> :error
+                {float, _} -> float
+              end
+            false ->
+              case Integer.parse(num) do
+                :error -> :error
+                {int, _} -> int
+              end
+          end
+      end
     end
   end
 

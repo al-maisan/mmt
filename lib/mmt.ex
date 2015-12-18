@@ -132,7 +132,7 @@ defmodule Mmt do
 
 
   def check_keys(config, uids \\ nil) do
-    if config["general"]["encrypt-attachments"] == true do
+    if Cfg.convert_value(config["general"]["encrypt-attachments"]) == true do
       # make sure we have gpg keys for all recipients
       if !uids do
         uids = GCrypto.get_valid_uids()

@@ -118,7 +118,7 @@ defmodule MmtTest do
 
 
   test "check_keys() with empty uid list" do
-    config = %{"general" => %{"encrypt-attachments" => true},
+    config = %{"general" => %{"encrypt-attachments" => "true"},
                "recipients" => %{
                   "jd@example.com" => {"01", ["John", "Doe III"]},
                   "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
@@ -128,7 +128,7 @@ defmodule MmtTest do
 
 
   test "check_keys() with partial uid list" do
-    config = %{"general" => %{"encrypt-attachments" => true},
+    config = %{"general" => %{"encrypt-attachments" => "true"},
                "recipients" => %{
                   "jd@example.com" => {"01", ["John", "Doe III"]},
                   "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
@@ -138,7 +138,7 @@ defmodule MmtTest do
 
 
   test "check_keys() with full uid list" do
-    config = %{"general" => %{"encrypt-attachments" => true},
+    config = %{"general" => %{"encrypt-attachments" => "true"},
                "recipients" => %{
                   "jd@example.com" => {"01", ["John", "Doe III"]},
                   "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
@@ -148,7 +148,7 @@ defmodule MmtTest do
 
 
   test "check_keys() with clear text attachments" do
-    config = %{"general" => %{"encrypt-attachments" => false},
+    config = %{"general" => %{"encrypt-attachments" => "false"},
                "recipients" => %{
                   "jd@example.com" => {"01", ["John", "Doe III"]},
                   "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
@@ -158,7 +158,7 @@ defmodule MmtTest do
 
 
   test "check_keys() with no recipients" do
-    config = %{"general" => %{"encrypt-attachments" => false}}
+    config = %{"general" => %{"encrypt-attachments" => "false"}}
     expected = {:ok, "attachments not crypted"}
     assert expected == Mmt.check_keys(config, [])
   end

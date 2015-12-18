@@ -82,12 +82,16 @@ defmodule Mmt do
       [general]
       attachment1-name=%FN%-salary-info-for-September-2015
       attachment-path=/tmp
+      attachment-extension=pdf
       encrypt-attachments=true
-      sender_email=rts@example.com
-      sender_name=Frodo Baggins
+      sender-email=rts@example.com
+      sender-name=Frodo Baggins
       [recipients]
-      01; jd@example.com=John Doe III
-      02; mm@gmail.com=Mickey Mouse   # trailing comment!!
+      jd@example.com=John Doe III
+      mm@gmail.com=Mickey Mouse   # trailing comment!!
+      [attachments]
+      jd@example.com=01
+      mm@gmail.com=02
       """
     IO.puts help_text
   end

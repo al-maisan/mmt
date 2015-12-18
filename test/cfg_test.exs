@@ -111,21 +111,28 @@ defmodule CfgFilesTest do
     attachment1-name=%FN%-salary-info-for-Sep-2015
     attachment-path=/tmp
     encrypt-attachments=true
-    sender_email=rts@example.com
-    sender_name=Frodo Baggins
+    sender-email=rts@example.com
+    sender-name=Frodo Baggins
+    attachment-extension=pdf
     [recipients]
-    01; jd@example.com=John    Doe III
-    02; mm@gmail.com=Mickey     Mouse   # trailing comment!!
+    jd@example.com=John    Doe III
+    mm@gmail.com=Mickey     Mouse   # trailing comment!!
+    [attachments]
+    jd@example.com=aa
+    mm@gmail.com=bb
     """
   test "read_config() works", context do
     expected = %{
       "general" => %{"attachment-path" => "/tmp",
                      "attachment1-name" => "%FN%-salary-info-for-Sep-2015",
                      "encrypt-attachments" => true,
-                     "sender_email" => "rts@example.com",
-                     "sender_name" => "Frodo Baggins"},
-      "recipients" => %{"jd@example.com" => {"01", ["John", "Doe III"]},
-                        "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
+                     "attachment-extension" => "pdf",
+                     "sender-email" => "rts@example.com",
+                     "sender-name" => "Frodo Baggins"},
+      "recipients" => %{"jd@example.com" => "John    Doe III",
+                        "mm@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"jd@example.com" => "aa",
+                         "mm@gmail.com" => "bb"}}
     {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
     actual = Cfg.read_config(data)
     assert actual == expected
@@ -136,19 +143,27 @@ defmodule CfgFilesTest do
     # config file with repeating keys (email addresses)
         # dangling comment
     [general]
-    sender_email=rts@example.com
-    sender_name=Frodo Baggins
+    sender-email=rts@example.com
+    sender-name=Frodo Baggins
+    attachment-extension=doc
     [recipients]
-    01; abx.fgh@exact.ly=Éso Pita
-    02; fheh@fphfdd.cc=Gulliver    Jöllo
-    03; abx.fgh@exact.ly=   Charly      De Gaulle
+    abx.fgh@exact.ly=Éso Pita
+    fheh@fphfdd.cc=Gulliver    Jöllo
+    abx.fgh@exact.ly=   Charly      De Gaulle
+    [attachments]
+    abx.fgh@exact.ly=01
+    fheh@fphfdd.cc=02
+    abx.fgh@exact.ly=03
     """
   test "read_config() with repeated keys", context do
     expected = %{
-      "general" => %{"sender_email" => "rts@example.com",
-                     "sender_name" => "Frodo Baggins"},
-      "recipients" => %{"abx.fgh@exact.ly" => {"03", ["Charly", "De Gaulle"]},
-                        "fheh@fphfdd.cc" => {"02", ["Gulliver", "Jöllo"]}}}
+      "general" => %{"sender-email" => "rts@example.com",
+                     "attachment-extension" => "doc",
+                     "sender-name" => "Frodo Baggins"},
+      "recipients" => %{"abx.fgh@exact.ly" => "Charly      De Gaulle",
+                        "fheh@fphfdd.cc" => "Gulliver    Jöllo"},
+      "attachments" => %{"abx.fgh@exact.ly" => "03",
+                         "fheh@fphfdd.cc" => "02"}}
     {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
     actual = Cfg.read_config(data)
     assert actual == expected

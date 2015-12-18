@@ -10,17 +10,10 @@ defmodule Cfg do
   """
   def read_config(config) do
     { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")
-    content = Regex.scan(rx, config, [capture: :all_but_first])
 
-    general = case (for [k, v] <- content, k == "general", do: v) do
-      [] -> %{}
-      [gdata] -> read_single_config_section("general", gdata)
-    end
-
-    [recipients] = for [k, v] <- content, k == "recipients", do: v
-    recipients = read_single_config_section("recipients", recipients)
-
-    %{"general" => general, "recipients" => recipients}
+    Regex.scan(rx, config, [capture: :all_but_first])
+    |> Enum.map(fn([k, v]) -> {k, read_single_config_section(k, v)} end)
+    |> Enum.into(Map.new)
   end
 
 
@@ -31,13 +24,7 @@ defmodule Cfg do
     |> Enum.map(
       fn line ->
         [key, value] = String.split(line, ~r{\s*=\s*})
-        case section do
-          "recipients" ->
-            [id, key] = String.split(key, ~r{\s*;\s*}, parts: 2, trim: true)
-            value = String.split(value, ~r{\s+}, parts: 2, trim: true)
-            {key, {id, value}}
-          _ -> {String.strip(key), convert_value(String.strip(value))}
-        end
+        {String.strip(key), String.strip(value)}
       end)
     |> Enum.into(Map.new)
   end

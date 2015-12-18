@@ -114,7 +114,7 @@ defmodule Mmt do
   """
   def do_mmt({template, config, dr, subj, do_attmts}) do
     if do_attmts do
-      case check_keys(config) do
+      case GCrypto.check_keys(config) do
         {:ok, _} -> case check_attachments(config) do
             {:ok, _} -> :ok
             {:error, error} -> IO.puts error; System.halt(105)
@@ -127,27 +127,6 @@ defmodule Mmt do
       IO.puts(do_dryrun(mails, subj))
     else
       do_send(mails, subj, config["general"])
-    end
-  end
-
-
-  def check_keys(config, uids \\ nil) do
-    if Cfg.convert_value(config["general"]["encrypt-attachments"]) == true do
-      # make sure we have gpg keys for all recipients
-      if !uids do
-        uids = GCrypto.get_valid_uids()
-      end
-      recipients = Dict.keys(config["recipients"])
-      missing_keys = Set.difference(Enum.into(recipients, HashSet.new),
-                                    Enum.into(uids, HashSet.new))
-      if Set.size(missing_keys) > 0 do
-        error = "No gpg keys for:\n" <> Enum.reduce(Enum.map(missing_keys, fn x -> "  #{x}\n" end), "", fn a, b -> a <> b end)
-        {:error, error}
-      else
-        {:ok, "all set!"}
-      end
-    else
-      {:ok, "attachments not crypted"}
     end
   end
 

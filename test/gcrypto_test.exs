@@ -56,4 +56,60 @@ defmodule GCryptoTest do
     actual = GCrypto.filter_uids(@gpg_out)
     assert expected == actual
   end
+
+
+  test "check_keys() with empty uid list" do
+    config = %{"general" => %{"encrypt-attachments" => "true"},
+               "recipients" => %{
+                  "jd@example.com" => {"01", ["John", "Doe III"]},
+                  "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
+    expected = {:error, "No gpg keys for:\n  jd@example.com\n  mm@gmail.com\n"}
+    assert expected == GCrypto.check_keys(config, [])
+  end
+
+
+  test "check_keys() with partial uid list" do
+    config = %{"general" => %{"encrypt-attachments" => "true"},
+               "recipients" => %{
+                  "jd@example.com" => {"01", ["John", "Doe III"]},
+                  "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
+    expected = {:error, "No gpg keys for:\n  mm@gmail.com\n"}
+    assert expected == GCrypto.check_keys(config, ["jd@example.com"])
+  end
+
+
+  test "check_keys() with full uid list" do
+    config = %{"general" => %{"encrypt-attachments" => "true"},
+               "recipients" => %{
+                  "jd@example.com" => {"01", ["John", "Doe III"]},
+                  "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
+    expected = {:ok, "all set!"}
+    assert expected == GCrypto.check_keys(config, ["jd@example.com", "mm@gmail.com"])
+  end
+
+
+  test "check_keys() with clear text attachments" do
+    config = %{"general" => %{"encrypt-attachments" => "false"},
+               "recipients" => %{
+                  "jd@example.com" => {"01", ["John", "Doe III"]},
+                  "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
+    expected = {:ok, "attachments not crypted"}
+    assert expected == GCrypto.check_keys(config, ["jd@example.com"])
+  end
+
+
+  test "check_keys() with no recipients" do
+    config = %{"general" => %{"encrypt-attachments" => "false"}}
+    expected = {:ok, "attachments not crypted"}
+    assert expected == GCrypto.check_keys(config, [])
+  end
+
+
+  test "check_keys() with no general config section" do
+    config = %{"recipients" => %{
+                  "jd@example.com" => {"01", ["John", "Doe III"]},
+                  "mm@gmail.com" => {"02", ["Mickey", "Mouse"]}}}
+    expected = {:ok, "attachments not crypted"}
+    assert expected == GCrypto.check_keys(config, ["jd@example.com"])
+  end
 end

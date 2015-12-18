@@ -90,8 +90,8 @@ defmodule Mmt do
       jd@example.com=John Doe III
       mm@gmail.com=Mickey Mouse   # trailing comment!!
       [attachments]
-      jd@example.com=01
-      mm@gmail.com=02
+      jd@example.com=01.pdf
+      mm@gmail.com=02.pdf
       """
     IO.puts help_text
   end
@@ -238,9 +238,9 @@ defmodule Mmt do
   """
   def prep_email({template, email, name}) do
     body = Regex.replace(~r/%EA%/, template, email, global: true)
-    [fname, lname] = String.split(name, ~r{\s+}, parts: 2, trim: true)
+    [fname | lnames] = String.split(name, ~r{\s+}, trim: true)
     body = Regex.replace(~r/%FN%/, body, fname, global: true)
-    body = Regex.replace(~r/%LN%/, body, lname, global: true)
+    body = Regex.replace(~r/%LN%/, body, Enum.join(lnames, " "), global: true)
 
     {email, body}
   end

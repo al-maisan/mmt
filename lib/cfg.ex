@@ -5,8 +5,9 @@ defmodule Cfg do
 
 
   @doc """
-  Read the configuration file and return a Map where the keys are the email
-  addresses and the values are the full names.
+  Read the configuration file and return a map where the keys are the ini
+  file section names and the values are maps with configuration key/value
+  pairs.
   """
   def read_config(config) do
     { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")

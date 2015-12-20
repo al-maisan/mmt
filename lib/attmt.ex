@@ -7,7 +7,7 @@ defmodule Attmt do
   Make sure
    * the configuration relating to attachments is correct
    * all required attachment files exist and we can read them
-  Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
+  Return a tuple of `{:ok, "all set!"}`, or `{:error, [errors]}`
   """
   def check_attachments(_config) do
   end
@@ -17,7 +17,45 @@ defmodule Attmt do
   Make sure the configuration relating to attachments is correct.
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
-  def check_config(_config) do
+  def check_config(config) do
+    atp = config["general"]["attachment-path"]
+    case atp do
+      nil -> {:error, "no attachment path defined"}
+      _ ->
+        atmts = config["attachments"]
+        # check for attachment definition clashes first
+        case atmts do
+          nil -> {:error, "No attachments defined at all"}
+          _ ->
+            atdefs = Dict.values(atmts)
+            counts = Enum.map(Enum.uniq(atdefs), fn x -> {x, 0} end)
+              |> Enum.into(Map.new)
+            dups = Enum.reduce(
+              atdefs, counts, fn(m, cs) -> %{cs | m => cs[m]+1} end)
+              |> Enum.filter(fn {_, v} -> v > 1 end)
+              |> Dict.keys
+              |> Enum.sort
+            if Enum.empty?(dups) do
+              if Dict.keys(atmts) === Dict.keys(config["recipients"]) do
+                {:ok, "all set!"}
+              else
+                ats = Enum.into(Dict.keys(atmts), HashSet.new)
+                rps = Enum.into(Dict.keys(config["recipients"]), HashSet.new)
+                if Enum.count(ats) < Enum.count(rps) do
+                  missing = Enum.join(Enum.sort(Set.difference(rps, ats)), ", ")
+                  {:error, "No attachments defined for: #{missing}"}
+                else
+                  missing = Enum.join(Enum.sort(Set.difference(ats, rps)), ", ")
+                  {:error, "Unlisted recipients: #{missing}"}
+                end
+              end
+            else
+              dups = Enum.join(dups, ", ")
+              {:error, "Attachment(s) (#{dups}) used for more than one email"}
+            end
+        end
+
+    end
   end
 
 

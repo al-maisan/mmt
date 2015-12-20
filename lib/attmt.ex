@@ -31,7 +31,9 @@ defmodule Attmt do
       nil -> {:error, "no attachment path defined"}
       _ ->
         case dir_readable?(atp) do
-          false -> {:error, "attachment path non-existent or not readable"}
+          false ->
+            errmsg = "Missing or unreadable attachment path: #{atp}"
+            {:error, errmsg}
           true ->
             case config["attachments"] do
               nil -> {:ok, "all set!"}
@@ -39,6 +41,13 @@ defmodule Attmt do
                 missing = Enum.filter(Dict.values(afs), fn af ->
                   afp = atp <> "/" <> af
                   not file_readable?(afp) end)
+                if Enum.empty?(missing) do
+                  {:ok, "all set!"}
+                else
+                  errmsg = "Missing or unreadable attachment(s) in the #{atp} directory:"
+                  emas = Enum.map(missing, fn mf -> "    #{mf}" end)
+                  {:error, Enum.join(List.flatten([[errmsg], emas]), "\n")}
+                end
             end
         end
     end

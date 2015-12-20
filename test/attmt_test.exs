@@ -54,7 +54,7 @@ defmodule AttmtFilesTest do
           aa.pdf
           bb.pdf
       """
-    assert Attmt.check_files(config) == {:error, error_msg}
+    assert Attmt.check_files(config) == {:error, String.rstrip(error_msg)}
   end
 
 
@@ -71,7 +71,7 @@ defmodule AttmtFilesTest do
           aa.pdf
           bb.pdf
       """
-    assert Attmt.check_files(config) == {:error, error_msg}
+    assert Attmt.check_files(config) == {:error, String.rstrip(error_msg)}
   end
 
 
@@ -88,7 +88,7 @@ defmodule AttmtFilesTest do
           aa.pdf
           bb.pdf
       """
-    assert Attmt.check_files(config) == {:error, error_msg}
+    assert Attmt.check_files(config) == {:error, String.rstrip(error_msg)}
   end
 
 
@@ -100,10 +100,7 @@ defmodule AttmtFilesTest do
                         "mm@gmail.com" => "Mickey     Mouse"},
       "attachments" => %{"jd@example.com" => "aa.pdf",
                          "mm@gmail.com" => "bb.pdf"}}
-    error_msg = """
-      Missing or unreadable attachment path:
-          /does/not/exist
-      """
+    error_msg = "Missing or unreadable attachment path: /does/not/exist"
     assert Attmt.check_files(config) == {:error, error_msg}
   end
 
@@ -117,10 +114,19 @@ defmodule AttmtFilesTest do
                         "mm@gmail.com" => "Mickey     Mouse"},
       "attachments" => %{"jd@example.com" => "aa.pdf",
                          "mm@gmail.com" => "bb.pdf"}}
-    error_msg = """
-      Missing or unreadable attachment path:
-        #{context[:tpath]}
-      """
+    error_msg = "Missing or unreadable attachment path: #{context[:tpath]}"
+    assert Attmt.check_files(config) == {:error, error_msg}
+  end
+
+
+  @tag afs: []
+  test "check_files(), undefined attachment path", context do
+    config = %{
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf"}}
+    error_msg = "no attachment path defined"
     assert Attmt.check_files(config) == {:error, error_msg}
   end
 end

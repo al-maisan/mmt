@@ -4,16 +4,6 @@ defmodule Attmt do
   """
 
   @doc """
-  Make sure
-   * the configuration relating to attachments is correct
-   * all required attachment files exist and we can read them
-  Return a tuple of `{:ok, "all set!"}`, or `{:error, [errors]}`
-  """
-  def check_attachments(_config) do
-  end
-
-
-  @doc """
   Make sure the configuration relating to attachments is correct.
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
@@ -54,7 +44,6 @@ defmodule Attmt do
               {:error, "Attachment(s) (#{dups}) used for more than one email"}
             end
         end
-
     end
   end
 

@@ -95,4 +95,45 @@ defmodule Attmt do
       {:ok, sd} -> (sd.type === :regular) and ((sd.access === :read) or (sd.access === :read_write))
     end
   end
+
+
+  @doc """
+  If we are to send out attachments, make sure they are all there and we can
+  read them. Also, if they are to be crypted make sure we have all the keys.
+  Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
+  """
+  def check_attachments(config) do
+    failed = false
+    error = nil
+
+    if Cfg.convert_value(config["general"]["encrypt-attachments"]) == true do
+      case GCrypto.check_keys(config) do
+        {:ok, _} -> nil
+        errordata ->
+          failed = true
+          error = errordata
+      end
+    end
+    if not failed do
+      case check_config(config) do
+        {:ok, _} -> nil
+        errordata ->
+          failed = true
+          error = errordata
+      end
+    end
+    if not failed do
+      case check_files(config) do
+        {:ok, _} -> nil
+        errordata ->
+          failed = true
+          error = errordata
+      end
+    end
+    if not failed do
+      {:ok, "all set!"}
+    else
+      error
+    end
+  end
 end

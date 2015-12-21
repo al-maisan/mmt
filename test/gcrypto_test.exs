@@ -86,6 +86,4 @@ defmodule GCryptoTest do
     expected = {:ok, "all set!"}
     assert expected == GCrypto.check_keys(config, ["jd@example.com", "mm@gmail.com"])
   end
-
-
 end

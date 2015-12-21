@@ -38,8 +38,7 @@ defmodule Mmt do
       System.halt(103)
     end
     {:ok, config} = File.open(parse[:config_path], fn(f) -> IO.binread(f, :all) end)
-    {:ok, template} = File.open(parse[:template_path],
-                                fn(f) -> IO.binread(f, :all) end)
+    {:ok, template} = File.open(parse[:template_path], fn(f) -> IO.binread(f, :all) end)
     case Cfg.check_config(config) do
       :ok ->
         config = Cfg.read_config(config)
@@ -53,92 +52,21 @@ defmodule Mmt do
   end
 
 
-  defp print_help() do
-    help_text = """
-
-      Send emails in bulk based on a template and a config file containing
-      the email body and recipient names/addresses respectively.
-
-        --help            print this help
-        --config-path     path to the config file
-        --dry-run         print commands that would be executed, but do not
-                          execute them
-        --subject         email subject
-        --template-path   path to the template file
-        --sample-config   prints a sample config file to stdout
-        --sample-template prints a sample template file to stdout
-      """
-    IO.puts help_text
-  end
-
-
-  defp print_sample_config() do
-    help_text = """
-      # anything that follows a hash is a comment
-      # email address is to the left of the '=' sign, first word after is
-      # the first name, the rest is the surname
-      [general]
-      attachment-path=/tmp
-      encrypt-attachments=true
-      sender-email=rts@example.com
-      sender-name=Frodo Baggins
-      [recipients]
-      jd@example.com=John Doe III
-      mm@gmail.com=Mickey Mouse   # trailing comment!!
-      [attachments]
-      jd@example.com=01.pdf
-      mm@gmail.com=02.pdf
-      """
-    IO.puts help_text
-  end
-
-
-  defp print_sample_template() do
-    help_text = """
-      FN / LN / EA = first name / last name / email address
-
-      Hello %FN% // %LN%,
-      this is your email * 2: %EA%%EA%.
-      """
-    IO.puts help_text
-  end
-
-
   @doc """
   Send out the emails given the template, configuration, dry-run flag,
   subject line and the do-attachments flag.
   """
-  def do_mmt({template, config, dr, subj}) do
-    if Cfg.convert_value(config["general"]["encrypt-attachments"]) == true do
-      case GCrypto.check_keys(config) do
-        {:ok, _} -> case check_attachments(config) do
-            {:ok, _} -> :ok
-            {:error, error} -> IO.puts error; System.halt(105)
-          end
-        {:error, error} -> IO.puts error; System.halt(106)
-      end
+  def do_mmt({template, config, dryrun, subj}) do
+    case Attmt.check_attachments do
+      {:ok, _} ->
+        mails = prep_emails(config, template)
+        if dryrun do
+          IO.puts(do_dryrun(mails, subj))
+        else
+          do_send(mails, subj, config["general"])
+        end
+      {:error, error_msg} -> IO.puts error; System.halt(105)
     end
-    mails = prep_emails(config, template)
-    if dr do
-      IO.puts(do_dryrun(mails, subj))
-    else
-      do_send(mails, subj, config["general"])
-    end
-  end
-
-
-  @doc """
-  Return a list of readable files in the given directory.
-  """
-  def list_files(_dir) do
-  end
-
-
-  @doc """
-  If we are to send out attachments, make sure they are all there and we can
-  read them.
-  """
-  def check_attachments(_config) do
   end
 
 
@@ -218,5 +146,56 @@ defmodule Mmt do
     body = Regex.replace(~r/%LN%/, body, Enum.join(lnames, " "), global: true)
 
     {email, body}
+  end
+
+
+  defp print_help() do
+    help_text = """
+
+      Send emails in bulk based on a template and a config file containing
+      the email body and recipient names/addresses respectively.
+
+        --help            print this help
+        --config-path     path to the config file
+        --dry-run         print commands that would be executed, but do not
+                          execute them
+        --subject         email subject
+        --template-path   path to the template file
+        --sample-config   prints a sample config file to stdout
+        --sample-template prints a sample template file to stdout
+      """
+    IO.puts help_text
+  end
+
+
+  defp print_sample_config() do
+    help_text = """
+      # anything that follows a hash is a comment
+      # email address is to the left of the '=' sign, first word after is
+      # the first name, the rest is the surname
+      [general]
+      attachment-path=/tmp
+      encrypt-attachments=true
+      sender-email=rts@example.com
+      sender-name=Frodo Baggins
+      [recipients]
+      jd@example.com=John Doe III
+      mm@gmail.com=Mickey Mouse   # trailing comment!!
+      [attachments]
+      jd@example.com=01.pdf
+      mm@gmail.com=02.pdf
+      """
+    IO.puts help_text
+  end
+
+
+  defp print_sample_template() do
+    help_text = """
+      FN / LN / EA = first name / last name / email address
+
+      Hello %FN% // %LN%,
+      this is your email * 2: %EA%%EA%.
+      """
+    IO.puts help_text
   end
 end

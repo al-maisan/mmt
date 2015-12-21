@@ -57,7 +57,7 @@ defmodule Mmt do
   subject line and the do-attachments flag.
   """
   def do_mmt({template, config, dryrun, subj}) do
-    case Attmt.check_attachments do
+    case Attmt.prepare_attachments do
       {:ok, _} ->
         mails = prep_emails(config, template)
         if dryrun do
@@ -65,7 +65,7 @@ defmodule Mmt do
         else
           do_send(mails, subj, config["general"])
         end
-      {:error, error_msg} -> IO.puts error; System.halt(105)
+      {:error, error_msg} -> IO.puts error_msg; System.halt(105)
     end
   end
 
@@ -127,10 +127,6 @@ defmodule Mmt do
     Enum.map(
       config["recipients"],
       fn {email, name} -> prep_email({template, email, name}) end)
-  end
-
-
-  def prep_attachment({_config, _aid, _fna, _lna}) do
   end
 
 

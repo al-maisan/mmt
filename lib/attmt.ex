@@ -99,14 +99,16 @@ defmodule Attmt do
 
   @doc """
   If we are to send out attachments, make sure they are all there and we can
-  read them. Also, if they are to be crypted make sure we have all the keys.
+  read them. Also, if they are to be crypted make sure we have all the keys
+  and encrypt the attachments.
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
-  def check_attachments(config) do
+  def prepare_attachments(config) do
     failed = false
     error = nil
+    do_encrypt = Cfg.convert_value(config["general"]["encrypt-attachments"])
 
-    if Cfg.convert_value(config["general"]["encrypt-attachments"]) == true do
+    if do_encrypt == true do
       case GCrypto.check_keys(config) do
         {:ok, _} -> nil
         errordata ->
@@ -130,10 +132,40 @@ defmodule Attmt do
           error = errordata
       end
     end
+    if (not failed) and do_encrypt do
+      case encrypt_attachments(config) do
+        {:ok, _} -> nil
+        errordata ->
+          failed = true
+          error = errordata
+      end
+    end
     if not failed do
       {:ok, "all set!"}
     else
       error
+    end
+  end
+
+
+  @doc """
+  Encrypt the attachment files. Assume the config data is OK and all
+  attachments are in place and readable.
+  Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
+  """
+  def encrypt_attachments(config, efunc \\ &GCrypto.encrypt/2) do
+    atp = config["general"]["attachment-path"]
+    errors = Enum.map(config["attachments"], fn {email, atf} ->
+        case efunc.(atp <> "/" <> atf, email) do
+          {:ok, _} -> nil
+          {:error, {[errordata], _}} -> errordata
+        end
+      end)
+    |> Enum.filter(fn x -> x != nil end)
+    if Enum.count(errors) == 0 do
+      {:ok, "all set!"}
+    else
+      {:error, Enum.join(errors, "\n")}
     end
   end
 end

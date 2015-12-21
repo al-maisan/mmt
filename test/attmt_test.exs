@@ -99,7 +99,7 @@ defmodule AttmtFilesTest do
     end
 
     on_exit fn ->
-      System.cmd("rm", ["-rf", tpath])
+      #System.cmd("rm", ["-rf", tpath])
     end
 
     {:ok, tpath: tpath}
@@ -205,5 +205,17 @@ defmodule AttmtFilesTest do
                          "mm@gmail.com" => "bb.pdf"}}
     error_msg = "no attachment path defined"
     assert Attmt.check_files(config) == {:error, error_msg}
+  end
+
+
+  @tag afs: [{"aa.pdf", 0o600}, {"bb.pdf", 0o644}]
+  test "encrypt_attachments(), happy path", context do
+    config = %{
+      "general" => %{"attachment-path" => context[:tpath]},
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf"}}
+    assert Attmt.encrypt_attachments(config) == {:ok, "all set!"}
   end
 end

@@ -1,0 +1,28 @@
+This is a revocation certificate for the OpenPGP key:
+
+pub  rsa2048/C69AEF1B 2015-12-21
+      Key fingerprint = D765 B035 0C6E A015 019C  4C03 B46A E0E8 C69A EF1B
+uid                  John Doe III <jd@example.com>
+
+Use it to revoke this key in case of a compromise or loss of
+the secret key.  However, if the secret key is still accessible,
+it is better to generate a new revocation certificate and give
+a reason for the revocation.
+
+To avoid an accidental use of this file, a colon has been inserted
+before the 5 dashes below.  Remove this colon with a text editor
+before making use of this revocation certificate.
+
+:-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+Comment: This is a revocation certificate
+
+iQEfBCABCAAJBQJWeDb6Ah0AAAoJELRq4OjGmu8bdVAH/RrsYFRsO1p46AKTYBC8
+eJtsDru1BATe9qGezvWn4zZJ21sHvSf++7s4YwT41PPhLx1R/EKQXwiwmgIj5esp
+Yb2hp33B5erX3nOxG6hu/q2KdMNv7H3LgZDHzS2YyH1zBc9uh9CBG9Qw3nK5V03E
+rN434OHoXNAoUuAwICvfYK2Cy0M/YIgpEohfllgKvP5I735LvkjiG0xlQGIAddUo
+3XEjxREluARHdFdz8TvKFsDTq84UxVfcpt8JcHGYyIwa6210ea4svpLjPIqWOb0c
+tDLplnK7g9R52Ltd5ooR+XlycCT1MbcNuwk94QbmWXS8yIyNctYuEW1Q8yUx//DC
+8IE=
+=Ua9S
+-----END PGP PUBLIC KEY BLOCK-----

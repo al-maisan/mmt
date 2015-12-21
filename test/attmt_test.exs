@@ -1,7 +1,7 @@
 defmodule AttmtTest do
   use ExUnit.Case
 
-  test "check_config(), happy path" do
+  test "check_config(), happy case" do
     config = %{
       "general" => %{"attachment-path" => "/whatever"},
       "recipients" => %{"jd@example.com" => "John    Doe    III",
@@ -99,7 +99,7 @@ defmodule AttmtFilesTest do
     end
 
     on_exit fn ->
-      #System.cmd("rm", ["-rf", tpath])
+      System.cmd("rm", ["-rf", tpath])
     end
 
     {:ok, tpath: tpath}
@@ -107,7 +107,7 @@ defmodule AttmtFilesTest do
 
 
   @tag afs: [{"aa.pdf", 0o600}, {"bb.pdf", 0o644}]
-  test "check_files(), happy path", context do
+  test "check_files(), happy case", context do
     config = %{
       "general" => %{"attachment-path" => context[:tpath]},
       "recipients" => %{"jd@example.com" => "John    Doe    III",
@@ -209,7 +209,7 @@ defmodule AttmtFilesTest do
 
 
   @tag afs: [{"aa.pdf", 0o600}, {"bb.pdf", 0o644}]
-  test "encrypt_attachments(), happy path", context do
+  test "encrypt_attachments(), happy case", context do
     config = %{
       "general" => %{"attachment-path" => context[:tpath]},
       "recipients" => %{"jd@example.com" => "John    Doe    III",
@@ -217,5 +217,22 @@ defmodule AttmtFilesTest do
       "attachments" => %{"jd@example.com" => "aa.pdf",
                          "mm@gmail.com" => "bb.pdf"}}
     assert Attmt.encrypt_attachments(config) == {:ok, "all set!"}
+  end
+
+
+  @tag afs: [{"aa.pdf", 0o600}, {"bb.pdf", 0o644}, {"cc.pdf", 0o644}]
+  test "encrypt_attachments(), one key missing", context do
+    config = %{
+      "general" => %{"attachment-path" => context[:tpath]},
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse",
+                        "mx@gmail.com" => "Mickey Xillu"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf",
+                         "mx@gmail.com" => "cc.pdf"}}
+    expected = {
+      :error,
+      "gpg: mx@gmail.com: skipped: No public key\n[GNUPG:] INV_RECP 1 mx@gmail.com\n[GNUPG:] FAILURE encrypt 9\ngpg: #{context[:tpath]}/cc.pdf: encryption failed: No public key\n"}
+    assert Attmt.encrypt_attachments(config) == expected
   end
 end

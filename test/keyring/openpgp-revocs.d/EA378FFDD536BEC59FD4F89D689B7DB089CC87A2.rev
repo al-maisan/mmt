@@ -1,0 +1,28 @@
+This is a revocation certificate for the OpenPGP key:
+
+pub  rsa2048/89CC87A2 2015-12-21
+      Key fingerprint = EA37 8FFD D536 BEC5 9FD4  F89D 689B 7DB0 89CC 87A2
+uid                  Mickey Mouse <mm@gmail.com>
+
+Use it to revoke this key in case of a compromise or loss of
+the secret key.  However, if the secret key is still accessible,
+it is better to generate a new revocation certificate and give
+a reason for the revocation.
+
+To avoid an accidental use of this file, a colon has been inserted
+before the 5 dashes below.  Remove this colon with a text editor
+before making use of this revocation certificate.
+
+:-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+Comment: This is a revocation certificate
+
+iQEfBCABCAAJBQJWeDjyAh0AAAoJEGibfbCJzIei4foH/2QHc68bblr5TaUGU4Jx
+yItrUFaliJ6fRopylvCPHUjjBrh3VZXo0ZwDGaH5Ez/JDOXFJ/+Qscl5OTYFQOa1
+FTEgBeG8HBYWH5pF9j+oLzBkmDBdkop4Ia03OAM9YH5/v3Z7o/IEUPiJL1kH8rl9
+p+i9sfByUlvama+6sQAZgu/gtV+eTgVHTcNIlOj448aY0wTc7VgOnlaR4otPaUkz
+ZvP7zouCO+P5vCr2RErGZ4uiCg83kX0jQIF1JslV+UZ/z7WXv4bb6wVvFmg4/RvZ
+RC3z1u/33Tq1l77HfPPpbbAqyGaSbYwFjOG4amkf47Pbpk3Gp4Ny2N9WEUfAZAX9
+Wlo=
+=R5l8
+-----END PGP PUBLIC KEY BLOCK-----

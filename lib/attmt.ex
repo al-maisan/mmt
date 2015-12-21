@@ -158,14 +158,14 @@ defmodule Attmt do
     errors = Enum.map(config["attachments"], fn {email, atf} ->
         case efunc.(atp <> "/" <> atf, email) do
           {:ok, _} -> nil
-          {:error, {[errordata], _}} -> errordata
+          {:error, {errordata, _}} -> Enum.join(errordata, "")
         end
       end)
     |> Enum.filter(fn x -> x != nil end)
     if Enum.count(errors) == 0 do
       {:ok, "all set!"}
     else
-      {:error, Enum.join(errors, "\n")}
+      {:error, Enum.join(errors, "\n\n")}
     end
   end
 end

@@ -1,17 +1,15 @@
-# Mmt
+# mmt
 
-**TODO: Add description**
+    $ ./mmt --help
 
-## Installation
+    Send emails in bulk based on a template and a config file containing
+    the email body and recipient names/addresses respectively.
 
-  1. Add mmt to your list of dependencies in mix.exs:
-
-        def deps do
-          [{:mmt, "~> 0.0.1"}]
-        end
-
-  2. Ensure mmt is started before your application:
-
-        def application do
-          [applications: [:mmt]]
-        end
+      --help            print this help
+      --config-path     path to the config file
+      --dry-run         print commands that would be executed, but do not
+                        execute them
+      --subject         email subject
+      --template-path   path to the template file
+      --sample-config   prints a sample config file to stdout
+      --sample-template prints a sample template file to stdout

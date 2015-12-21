@@ -40,22 +40,18 @@ defmodule GCrypto do
 
 
   def check_keys(config, uids \\ nil) do
-    if Cfg.convert_value(config["general"]["encrypt-attachments"]) == true do
-      # make sure we have gpg keys for all recipients
-      if !uids do
-        uids = GCrypto.get_valid_uids()
-      end
-      recipients = Dict.keys(config["recipients"])
-      missing_keys = Set.difference(Enum.into(recipients, HashSet.new),
-                                    Enum.into(uids, HashSet.new))
-      if Set.size(missing_keys) > 0 do
-        error = "No gpg keys for:\n" <> Enum.reduce(Enum.map(missing_keys, fn x -> "  #{x}\n" end), "", fn a, b -> a <> b end)
-        {:error, error}
-      else
-        {:ok, "all set!"}
-      end
+    # make sure we have gpg keys for all recipients
+    if !uids do
+      uids = GCrypto.get_valid_uids()
+    end
+    recipients = Dict.keys(config["recipients"])
+    missing_keys = Set.difference(Enum.into(recipients, HashSet.new),
+                                  Enum.into(uids, HashSet.new))
+    if Set.size(missing_keys) > 0 do
+      error = "No gpg keys for:\n" <> Enum.reduce(Enum.map(missing_keys, fn x -> "  #{x}\n" end), "", fn a, b -> a <> b end)
+      {:error, error}
     else
-      {:ok, "attachments not crypted"}
+      {:ok, "all set!"}
     end
   end
 end

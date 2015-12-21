@@ -8,7 +8,6 @@ defmodule Mmt do
       argv, strict: [help: :boolean, dry_run: :boolean,
                      subject: :string, template_path: :string,
                      config_path: :string, sample_config: :boolean,
-                     do_attachments: :boolean,
                      sample_template: :boolean])
 
     if parse[:help] do
@@ -44,8 +43,7 @@ defmodule Mmt do
     case Cfg.check_config(config) do
       :ok ->
         config = Cfg.read_config(config)
-        do_mmt({template, config, parse[:dry_run], parse[:subject],
-                parse[:do_attachments]})
+        do_mmt({template, config, parse[:dry_run], parse[:subject]})
       {:error, errors} ->
         IO.puts "!! You have errors in the config file:"
         for e <- errors, do: IO.puts "    * #{e}"
@@ -80,9 +78,7 @@ defmodule Mmt do
       # email address is to the left of the '=' sign, first word after is
       # the first name, the rest is the surname
       [general]
-      attachment1-name=%FN%-salary-info-for-September-2015
       attachment-path=/tmp
-      attachment-extension=pdf
       encrypt-attachments=true
       sender-email=rts@example.com
       sender-name=Frodo Baggins
@@ -112,8 +108,8 @@ defmodule Mmt do
   Send out the emails given the template, configuration, dry-run flag,
   subject line and the do-attachments flag.
   """
-  def do_mmt({template, config, dr, subj, do_attmts}) do
-    if do_attmts do
+  def do_mmt({template, config, dr, subj}) do
+    if Cfg.convert_value(config["general"]["encrypt-attachments"]) == true do
       case GCrypto.check_keys(config) do
         {:ok, _} -> case check_attachments(config) do
             {:ok, _} -> :ok

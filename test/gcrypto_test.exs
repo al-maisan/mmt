@@ -88,28 +88,4 @@ defmodule GCryptoTest do
   end
 
 
-  test "check_keys() with clear text attachments" do
-    config = %{"general" => %{"encrypt-attachments" => "false"},
-               "recipients" => %{
-                  "jd@example.com" =>  "John Doe III",
-                  "mm@gmail.com" =>  "Mickey Mouse"}}
-    expected = {:ok, "attachments not crypted"}
-    assert expected == GCrypto.check_keys(config, ["jd@example.com"])
-  end
-
-
-  test "check_keys() with no recipients" do
-    config = %{"general" => %{"encrypt-attachments" => "false"}}
-    expected = {:ok, "attachments not crypted"}
-    assert expected == GCrypto.check_keys(config, [])
-  end
-
-
-  test "check_keys() with no general config section" do
-    config = %{"recipients" => %{
-                  "jd@example.com" =>  "John Doe III",
-                  "mm@gmail.com" =>  "Mickey Mouse"}}
-    expected = {:ok, "attachments not crypted"}
-    assert expected == GCrypto.check_keys(config, ["jd@example.com"])
-  end
 end

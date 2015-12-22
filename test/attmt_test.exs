@@ -235,10 +235,44 @@ defmodule AttmtFilesTest do
                          "mx@gmail.com" => "cc.pdf"}}
     expected = {
       :error,
-      "gpg: mx@gmail.com: skipped: No public key\n[GNUPG:] INV_RECP 1 mx@gmail.com\n[GNUPG:] FAILURE encrypt 9\ngpg: #{context[:tpath]}/cc.pdf: encryption failed: No public key\n"}
+      """
+      gpg: mx@gmail.com: skipped: No public key
+      [GNUPG:] INV_RECP 1 mx@gmail.com
+      [GNUPG:] FAILURE encrypt 9
+      gpg: #{context[:tpath]}/cc.pdf: encryption failed: No public key
+      """}
     {:ok, cwd} = File.cwd()
     assert Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"]) == expected
     {:ok, atfs} = File.ls(context[:tpath])
     assert Enum.sort(atfs) == ["aa.pdf", "aa.pdf.gpg", "bb.pdf", "bb.pdf.gpg", "cc.pdf"]
+  end
+
+
+  @tag afs: [{"aa.pdf", 0o600}, {"bb.pdf", 0o644}]
+  test "encrypt_attachments(), all keys missing", context do
+    config = %{
+      "general" => %{"attachment-path" => context[:tpath]},
+      "recipients" => %{"ab@example.com" => "John    Doe    III",
+                        "cd@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"ab@example.com" => "aa.pdf",
+                         "cd@gmail.com" => "bb.pdf"}}
+    expected = {
+      :error,
+      """
+      gpg: ab@example.com: skipped: No public key
+      [GNUPG:] INV_RECP 1 ab@example.com
+      [GNUPG:] FAILURE encrypt 9
+      gpg: #{context[:tpath]}/aa.pdf: encryption failed: No public key
+
+
+      gpg: cd@gmail.com: skipped: No public key
+      [GNUPG:] INV_RECP 1 cd@gmail.com
+      [GNUPG:] FAILURE encrypt 9
+      gpg: #{context[:tpath]}/bb.pdf: encryption failed: No public key
+      """}
+    {:ok, cwd} = File.cwd()
+    assert Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"]) == expected
+    {:ok, atfs} = File.ls(context[:tpath])
+    assert Enum.sort(atfs) == ["aa.pdf", "bb.pdf"]
   end
 end

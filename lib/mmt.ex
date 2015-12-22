@@ -97,6 +97,7 @@ defmodule Mmt do
   def construct_cmd(path, config, subj, eaddr) do
     saddr = Map.get(config["general"], "sender-email", "no@return.email")
     name = Map.get(config["general"], "sender-name", "Do not reply")
+    atp = get_attachment_path(eaddr, config)
     header = "\"From: #{name} <#{saddr}>\""
     cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> eaddr
     to_char_list(cmd)
@@ -104,13 +105,33 @@ defmodule Mmt do
 
 
   @doc """
+  Checks whether the recipient's email should include an attachment and
+  whether the latter was crypted.
+  Return `nil` if there is no attachment or the proper path.
+  """
+  def get_attachment_path(eaddr, config) do
+    if config["attachments"] do
+      atf = config["attachments"][eaddr]
+      atp = config["general"]["attachment-path"] <> "/" <> atf
+      if config["general"]["encrypt-attachments"] do
+        atp <> ".gpg"
+      else
+        atp
+      end
+    else
+      nil
+    end
+  end
+
+
+  @doc """
   Prepares the text to be printed in case of a dry run.
   """
   def do_dryrun(mails, subj) do
-    mails |> Enum.map(fn {ea, body} ->
+    mails |> Enum.map(fn {eaddr, body} ->
       body = String.rstrip(body)
       """
-      To: #{ea}
+      To: #{eaddr}
       Subject: #{subj}
 
       #{body}

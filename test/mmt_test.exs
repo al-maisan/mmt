@@ -33,14 +33,16 @@ defmodule MmtTest do
   test "construct_cmd()" do
     path = "/tmp/mmt.kTuJU.eml"
     config = %{
-      "general" => %{"sender-email" => "mmt@chlo.cc",
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "sender-email" => "mmt@chlo.cc",
                      "sender-name" => "Frodo Baggins"}}
     subj = "hello from mmt"
     addr = "r2@ahfdo.cc"
-    expected = 'cat /tmp/mmt.kTuJU.eml | mail -a "From: Frodo Baggins <mmt@chlo.cc>" -s "hello from mmt" r2@ahfdo.cc'
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -a \"From: Frodo Baggins <mmt@chlo.cc>\" -s \"hello from mmt\" r2@ahfdo.cc"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
-    assert expected == actual
+    assert to_char_list(expected) == actual
   end
 
 

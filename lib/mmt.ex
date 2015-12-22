@@ -97,12 +97,13 @@ defmodule Mmt do
   def construct_cmd(path, config, subj, eaddr) do
     saddr = Map.get(config["general"], "sender-email", "no@return.email")
     name = Map.get(config["general"], "sender-name", "Do not reply")
+    mprog = Map.get(config["general"], "mail-prog", "mail")
     atp = get_attachment_path(eaddr, config)
     header = "From: #{name} <#{saddr}>"
     cmd = if atp != nil do
-      "cat #{path} | mail -a \"#{header}\" -s \"#{subj}\" -A #{atp} #{eaddr}"
+      "cat #{path} | #{mprog} -a \"#{header}\" -s \"#{subj}\" -A #{atp} #{eaddr}"
     else
-      "cat #{path} | mail -a \"#{header}\" -s \"#{subj}\" #{eaddr}"
+      "cat #{path} | #{mprog} -a \"#{header}\" -s \"#{subj}\" #{eaddr}"
     end
     to_char_list(cmd)
   end
@@ -196,6 +197,7 @@ defmodule Mmt do
       # email address is to the left of the '=' sign, first word after is
       # the first name, the rest is the surname
       [general]
+      mail-prog=gnu-mail # arch linux, just 'mail' on ubuntu
       attachment-path=/tmp
       encrypt-attachments=true
       sender-email=rts@example.com

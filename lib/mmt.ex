@@ -63,7 +63,7 @@ defmodule Mmt do
         if dryrun do
           IO.puts(do_dryrun(mails, subj))
         else
-          do_send(mails, subj, config["general"])
+          do_send(mails, subj, config)
         end
       {:error, error_msg} -> IO.puts error_msg; System.halt(105)
     end
@@ -85,20 +85,20 @@ defmodule Mmt do
   the 'mail' command via a shell.
   """
   def do_send([], _, _), do: nil
-  def do_send([{addr, body}|mails], subj, general) do
+  def do_send([{eaddr, body}|mails], subj, config) do
     path = write_file(String.rstrip(body))
-    cmd = construct_cmd(path, general, subj, addr)
+    cmd = construct_cmd(path, config, subj, eaddr)
     :os.cmd(cmd)
     System.cmd("rm", ["-f", path])
-    do_send(mails, subj, general)
+    do_send(mails, subj, config)
   end
 
 
-  def construct_cmd(path, general, subj, addr) do
-    eaddr = Map.get(general, "sender_email", "no@return.email")
-    name = Map.get(general, "sender_name", "Do not reply")
-    header = "\"From: #{name} <#{eaddr}>\""
-    cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> addr
+  def construct_cmd(path, config, subj, eaddr) do
+    saddr = Map.get(config["general"], "sender-email", "no@return.email")
+    name = Map.get(config["general"], "sender-name", "Do not reply")
+    header = "\"From: #{name} <#{saddr}>\""
+    cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> eaddr
     to_char_list(cmd)
   end
 
@@ -122,26 +122,27 @@ defmodule Mmt do
 
   @doc """
   Generates the email bodies for all the recipients.
+  Return a list of tuples of `[{eaddr1, body1}, .., {eaddrN, bodyN}]`
   """
   def prep_emails(config, template) do
     Enum.map(
       config["recipients"],
-      fn {email, name} -> prep_email({template, email, name}) end)
+      fn {eaddr, name} -> prep_email({template, eaddr, name}) end)
   end
 
 
   @doc """
-  Prepares a single email given a template and the recipient's email adress,
-  first and last name. Returns a 2-tuple containing the recipient's email
-  address and the body.
+  Prepares a single email given a template, the recipient's email adress
+  and name.
+  Return a tuple of `{eaddr, body}`
   """
-  def prep_email({template, email, name}) do
-    body = Regex.replace(~r/%EA%/, template, email, global: true)
+  def prep_email({template, eaddr, name}) do
+    body = Regex.replace(~r/%EA%/, template, eaddr, global: true)
     [fname | lnames] = String.split(name, ~r{\s+}, trim: true)
     body = Regex.replace(~r/%FN%/, body, fname, global: true)
     body = Regex.replace(~r/%LN%/, body, Enum.join(lnames, " "), global: true)
 
-    {email, body}
+    {eaddr, body}
   end
 
 

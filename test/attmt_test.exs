@@ -264,7 +264,6 @@ defmodule AttmtFilesTest do
       [GNUPG:] FAILURE encrypt 9
       gpg: #{context[:tpath]}/aa.pdf: encryption failed: No public key
 
-
       gpg: cd@gmail.com: skipped: No public key
       [GNUPG:] INV_RECP 1 cd@gmail.com
       [GNUPG:] FAILURE encrypt 9

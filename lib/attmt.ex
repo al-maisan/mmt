@@ -165,7 +165,7 @@ defmodule Attmt do
     if Enum.count(errors) == 0 do
       {:ok, "all set!"}
     else
-      {:error, Enum.join(errors, "\n\n")}
+      {:error, Enum.join(errors, "\n")}
     end
   end
 end

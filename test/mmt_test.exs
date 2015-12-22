@@ -30,7 +30,7 @@ defmodule MmtTest do
   end
 
 
-  test "construct_cmd()" do
+  test "construct_cmd() w/o attachments" do
     path = "/tmp/mmt.kTuJU.eml"
     config = %{
       "general" => %{"mail-prog" => "gnu-mail",
@@ -40,6 +40,47 @@ defmodule MmtTest do
     addr = "r2@ahfdo.cc"
     mprog = config["general"]["mail-prog"]
     expected = "cat #{path} | #{mprog} -a \"From: Frodo Baggins <mmt@chlo.cc>\" -s \"hello from mmt\" r2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() with encrypted attachments" do
+    path = "/tmp/mmt.kTuJU.eml"
+    atp = "/tmp/atp"
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "encrypt-attachments" => true,
+                     "attachment-path" => atp,
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"},
+      "attachments" => %{"ab@example.com" => "aa.pdf",
+                         "cd@gmail.com" => "bb.pdf"}}
+    subj = "hello from mmt"
+    addr = "cd@gmail.com"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -a \"From: Frodo Baggins <mmt@chlo.cc>\" -s \"hello from mmt\" -A #{atp}/bb.pdf.gpg cd@gmail.com"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() with clear text attachments" do
+    path = "/tmp/mmt.kTuJU.eml"
+    atp = "/tmp/atp"
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "attachment-path" => atp,
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"},
+      "attachments" => %{"ab@example.com" => "aa.pdf",
+                         "cd@gmail.com" => "bb.pdf"}}
+    subj = "hello from mmt"
+    addr = "ab@example.com"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -a \"From: Frodo Baggins <mmt@chlo.cc>\" -s \"hello from mmt\" -A #{atp}/aa.pdf ab@example.com"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
     assert to_char_list(expected) == actual

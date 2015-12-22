@@ -19,9 +19,9 @@ defmodule GCrypto do
     # filter valid UIDs
     |> Enum.filter(fn x -> Regex.match?(~r/^uid:[-oqmfuws]:/, x) end)
     # filter UIDs that are based on email addresses
-    |> Enum.filter(fn x -> Regex.match?(~r/<[^>]+@[^>]+>:$/, x) end)
+    |> Enum.filter(fn x -> Regex.match?(~r/<[^>]+@[^>]+>:*$/, x) end)
     # extract the email addresses
-    |> Enum.map(fn x -> Regex.replace(~r/^.+<([^>]+)>:$/, x, "\\1") end)
+    |> Enum.map(fn x -> Regex.replace(~r/^.+<([^>]+)>:*$/, x, "\\1") end)
     # make unique
     |> Enum.into(HashSet.new)
     |> Set.to_list
@@ -43,7 +43,7 @@ defmodule GCrypto do
   def check_keys(config, uids \\ nil) do
     # make sure we have gpg keys for all recipients
     if !uids do
-      uids = GCrypto.get_valid_uids()
+      {:ok, uids} = GCrypto.get_valid_uids()
     end
     recipients = Dict.keys(config["recipients"])
     missing_keys = Set.difference(Enum.into(recipients, HashSet.new),

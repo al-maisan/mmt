@@ -57,7 +57,7 @@ defmodule Mmt do
   subject line and the do-attachments flag.
   """
   def do_mmt({template, config, dryrun, subj}) do
-    case Attmt.prepare_attachments do
+    case Attmt.prepare_attachments(config) do
       {:ok, _} ->
         mails = prep_emails(config, template)
         if dryrun do

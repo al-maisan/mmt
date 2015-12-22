@@ -98,8 +98,12 @@ defmodule Mmt do
     saddr = Map.get(config["general"], "sender-email", "no@return.email")
     name = Map.get(config["general"], "sender-name", "Do not reply")
     atp = get_attachment_path(eaddr, config)
-    header = "\"From: #{name} <#{saddr}>\""
-    cmd = "cat #{path} | mail -a " <> header <> " -s \"#{subj}\" " <> eaddr
+    header = "From: #{name} <#{saddr}>"
+    cmd = if atp != nil do
+      "cat #{path} | mail -a \"#{header}\" -s \"#{subj}\" -A #{atp} #{eaddr}"
+    else
+      "cat #{path} | mail -a \"#{header}\" -s \"#{subj}\" #{eaddr}"
+    end
     to_char_list(cmd)
   end
 

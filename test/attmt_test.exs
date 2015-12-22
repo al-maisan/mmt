@@ -216,7 +216,10 @@ defmodule AttmtFilesTest do
                         "mm@gmail.com" => "Mickey     Mouse"},
       "attachments" => %{"jd@example.com" => "aa.pdf",
                          "mm@gmail.com" => "bb.pdf"}}
-    assert Attmt.encrypt_attachments(config) == {:ok, "all set!"}
+    {:ok, cwd} = File.cwd()
+    assert Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"]) == {:ok, "all set!"}
+    {:ok, atfs} = File.ls(context[:tpath])
+    assert Enum.sort(atfs) == ["aa.pdf", "aa.pdf.gpg", "bb.pdf", "bb.pdf.gpg"]
   end
 
 
@@ -233,6 +236,9 @@ defmodule AttmtFilesTest do
     expected = {
       :error,
       "gpg: mx@gmail.com: skipped: No public key\n[GNUPG:] INV_RECP 1 mx@gmail.com\n[GNUPG:] FAILURE encrypt 9\ngpg: #{context[:tpath]}/cc.pdf: encryption failed: No public key\n"}
-    assert Attmt.encrypt_attachments(config) == expected
+    {:ok, cwd} = File.cwd()
+    assert Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"]) == expected
+    {:ok, atfs} = File.ls(context[:tpath])
+    assert Enum.sort(atfs) == ["aa.pdf", "aa.pdf.gpg", "bb.pdf", "bb.pdf.gpg", "cc.pdf"]
   end
 end

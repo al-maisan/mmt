@@ -30,8 +30,9 @@ defmodule GCrypto do
   end
 
 
-  def encrypt(path, recipient) do
-    {out, ec} = System.cmd("gpg", ["--batch", "--no-tty", "--status-fd", "2", "-r", recipient, "-e", path], [into: [], stderr_to_stdout: true])
+  def encrypt(path, recipient, args \\ []) do
+    defaultargs = ["--batch", "--no-tty", "--status-fd", "2", "-r", recipient, "-e", path]
+    {out, ec} = System.cmd("gpg", List.flatten([args, defaultargs]), [into: [], stderr_to_stdout: true])
     case ec do
       0 -> {:ok, path <> ".gpg"}
       _ -> {:error, {out, ec}}

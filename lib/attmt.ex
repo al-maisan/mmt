@@ -153,10 +153,10 @@ defmodule Attmt do
   attachments are in place and readable.
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
-  def encrypt_attachments(config, efunc \\ &GCrypto.encrypt/2) do
+  def encrypt_attachments(config, gpgargs \\ [], efunc \\ &GCrypto.encrypt/3) do
     atp = config["general"]["attachment-path"]
     errors = Enum.map(config["attachments"], fn {email, atf} ->
-        case efunc.(atp <> "/" <> atf, email) do
+        case efunc.(atp <> "/" <> atf, email, gpgargs) do
           {:ok, _} -> nil
           {:error, {errordata, _}} -> Enum.join(errordata, "")
         end

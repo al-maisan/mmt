@@ -155,8 +155,8 @@ defmodule Attmt do
   """
   def encrypt_attachments(config, gpgargs \\ [], efunc \\ &GCrypto.encrypt/3) do
     atp = config["general"]["attachment-path"]
-    errors = Enum.map(config["attachments"], fn {email, atf} ->
-        case efunc.(atp <> "/" <> atf, email, gpgargs) do
+    errors = Enum.map(config["attachments"], fn {eaddr, atf} ->
+        case efunc.(atp <> "/" <> atf, eaddr, gpgargs) do
           {:ok, _} -> nil
           {:error, {errordata, _}} -> Enum.join(errordata, "")
         end

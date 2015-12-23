@@ -151,21 +151,26 @@ defmodule Attmt do
   @doc """
   Encrypt the attachment files. Assume the config data is OK and all
   attachments are in place and readable.
+  Every attachment is encrypted using a separate Erlang process.
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
   def encrypt_attachments(config, gpgargs \\ [], efunc \\ &GCrypto.encrypt/3) do
+    me = self
     atp = config["general"]["attachment-path"]
     errors = Enum.map(config["attachments"], fn {eaddr, atf} ->
-        case efunc.(atp <> "/" <> atf, eaddr, gpgargs) do
-          {:ok, _} -> nil
-          {:error, {errordata, _}} -> Enum.join(errordata, "")
+        spawn_link fn ->
+          case efunc.(atp <> "/" <> atf, eaddr, gpgargs) do
+            {:ok, _} -> send me, nil
+            {:error, {errordata, _}} -> send me, Enum.join(errordata, "")
+          end
         end
       end)
+    |> Enum.map(fn(_) -> receive do result -> result end end)
     |> Enum.filter(fn x -> x != nil end)
     if Enum.count(errors) == 0 do
       {:ok, "all set!"}
     else
-      {:error, Enum.join(errors, "\n")}
+      {:error, Enum.join(Enum.sort(errors), "\n")}
     end
   end
 end

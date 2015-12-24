@@ -33,12 +33,12 @@ defmodule Cfg do
     { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")
 
     Regex.scan(rx, config, [capture: :all_but_first])
-    |> Enum.map(fn([k, v]) -> {k, read_single_config_section(k, v)} end)
+    |> Enum.map(fn([k, v]) -> {k, read_single_config_section(v)} end)
     |> Enum.into(Map.new)
   end
 
 
-  def read_single_config_section(section, content) do
+  def read_single_config_section(content) do
     String.split(content, "\n")
     |> Enum.map(fn(x) -> Regex.replace(~R/\s*#.*$/, x, "") end)
     |> Enum.filter(&String.contains?(&1, "="))

@@ -180,10 +180,29 @@ defmodule MmtTest do
 
       Gracias
       """
+    expected1 = """
+      To: 11@xy.com
+      Subject: Test 1
+
+      Hello Honky !! Tonk,
+      this is your email: 11@xy.com11@xy.com.
+
+      Thanks!
+      ---
+      """
+    expected2 = """
+      To: 22@xy.com
+      Subject: Test 1
+
+      Hola Mini ## Mouse,
+      this is your email: 22@xy.com22@xy.com.
+
+      Gracias
+      ---
+      """
+    expected = [expected1, expected2]
     actual = Mmt.do_dryrun(
       [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1", config)
-    expected = ["To: 11@xy.com\nSubject: Test 1\n\nHello Honky !! Tonk,\nthis is your email: 11@xy.com11@xy.com.\n\nThanks!\n---\n",
-            "To: 22@xy.com\nSubject: Test 1\n\nHola Mini ## Mouse,\nthis is your email: 22@xy.com22@xy.com.\n\nGracias\n---\n"]
     assert expected == actual
   end
 
@@ -207,10 +226,33 @@ defmodule MmtTest do
 
       Gracias
       """
+    expected1 = """
+      To: 11@xy.com
+      Subject: Test 1
+
+      Hello Honky !! Tonk,
+      this is your email: 11@xy.com11@xy.com.
+
+      Thanks!
+
+      <</whatever/aa.pdf>>
+      ---
+      """
+    expected2 = """
+      To: 22@xy.com
+      Subject: Test 1
+
+      Hola Mini ## Mouse,
+      this is your email: 22@xy.com22@xy.com.
+
+      Gracias
+
+      <</whatever/bb.pdf>>
+      ---
+      """
+    expected = [expected1, expected2]
     actual = Mmt.do_dryrun(
       [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1", config)
-    expected = ["To: 11@xy.com\nSubject: Test 1\n\nHello Honky !! Tonk,\nthis is your email: 11@xy.com11@xy.com.\n\nThanks!\n\n<</whatever/aa.pdf>>\n---\n",
-            "To: 22@xy.com\nSubject: Test 1\n\nHola Mini ## Mouse,\nthis is your email: 22@xy.com22@xy.com.\n\nGracias\n\n<</whatever/bb.pdf>>\n---\n"]
     assert expected == actual
   end
 
@@ -235,10 +277,33 @@ defmodule MmtTest do
 
       Gracias
       """
+    expected1 = """
+      To: 11@xy.com
+      Subject: Test 1
+
+      Hello Honky !! Tonk,
+      this is your email: 11@xy.com11@xy.com.
+
+      Thanks!
+
+      <</whatever/aa.pdf.gpg>>
+      ---
+      """
+    expected2 = """
+      To: 22@xy.com
+      Subject: Test 1
+
+      Hola Mini ## Mouse,
+      this is your email: 22@xy.com22@xy.com.
+
+      Gracias
+
+      <</whatever/bb.pdf.gpg>>
+      ---
+      """
+    expected = [expected1, expected2]
     actual = Mmt.do_dryrun(
       [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1", config)
-    expected = ["To: 11@xy.com\nSubject: Test 1\n\nHello Honky !! Tonk,\nthis is your email: 11@xy.com11@xy.com.\n\nThanks!\n\n<</whatever/aa.pdf.gpg>>\n---\n",
-            "To: 22@xy.com\nSubject: Test 1\n\nHola Mini ## Mouse,\nthis is your email: 22@xy.com22@xy.com.\n\nGracias\n\n<</whatever/bb.pdf.gpg>>\n---\n"]
     assert expected == actual
   end
 end

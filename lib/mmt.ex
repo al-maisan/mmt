@@ -84,6 +84,7 @@ defmodule Mmt do
           IO.puts(do_dryrun(mails, subj, config))
         else
           do_send(mails, subj, config)
+          IO.puts("\nSent #{Enum.count(mails)} emails.\n")
         end
       {:error, error_msg} -> IO.puts error_msg; System.halt(105)
     end

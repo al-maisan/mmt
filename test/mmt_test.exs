@@ -164,7 +164,10 @@ defmodule MmtTest do
   end
 
 
-  test "dry_run() works" do
+  test "dry_run() works w/o attachments" do
+    config = %{
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"}}
     body1 = """
       Hello Honky !! Tonk,
       this is your email: 11@xy.com11@xy.com.
@@ -178,9 +181,64 @@ defmodule MmtTest do
       Gracias
       """
     actual = Mmt.do_dryrun(
-      [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1")
+      [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1", config)
     expected = ["To: 11@xy.com\nSubject: Test 1\n\nHello Honky !! Tonk,\nthis is your email: 11@xy.com11@xy.com.\n\nThanks!\n---\n",
             "To: 22@xy.com\nSubject: Test 1\n\nHola Mini ## Mouse,\nthis is your email: 22@xy.com22@xy.com.\n\nGracias\n---\n"]
+    assert expected == actual
+  end
+
+
+  test "dry_run() works with attachments" do
+    config = %{
+      "general" => %{"attachment-path" => "/whatever"},
+      "recipients" => %{"11@xy.com" => "John    Doe    III",
+                        "22@xy.com" => "Mickey     Mouse"},
+      "attachments" => %{"11@xy.com" => "aa.pdf",
+                         "22@xy.com" => "bb.pdf"}}
+    body1 = """
+      Hello Honky !! Tonk,
+      this is your email: 11@xy.com11@xy.com.
+
+      Thanks!
+      """
+    body2 = """
+      Hola Mini ## Mouse,
+      this is your email: 22@xy.com22@xy.com.
+
+      Gracias
+      """
+    actual = Mmt.do_dryrun(
+      [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1", config)
+    expected = ["To: 11@xy.com\nSubject: Test 1\n\nHello Honky !! Tonk,\nthis is your email: 11@xy.com11@xy.com.\n\nThanks!\n\n<</whatever/aa.pdf>>\n---\n",
+            "To: 22@xy.com\nSubject: Test 1\n\nHola Mini ## Mouse,\nthis is your email: 22@xy.com22@xy.com.\n\nGracias\n\n<</whatever/bb.pdf>>\n---\n"]
+    assert expected == actual
+  end
+
+
+  test "dry_run() works with crpypted attachments" do
+    config = %{
+      "general" => %{"attachment-path" => "/whatever",
+                     "encrypt-attachments" => true},
+      "recipients" => %{"11@xy.com" => "John    Doe    III",
+                        "22@xy.com" => "Mickey     Mouse"},
+      "attachments" => %{"11@xy.com" => "aa.pdf",
+                         "22@xy.com" => "bb.pdf"}}
+    body1 = """
+      Hello Honky !! Tonk,
+      this is your email: 11@xy.com11@xy.com.
+
+      Thanks!
+      """
+    body2 = """
+      Hola Mini ## Mouse,
+      this is your email: 22@xy.com22@xy.com.
+
+      Gracias
+      """
+    actual = Mmt.do_dryrun(
+      [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1", config)
+    expected = ["To: 11@xy.com\nSubject: Test 1\n\nHello Honky !! Tonk,\nthis is your email: 11@xy.com11@xy.com.\n\nThanks!\n\n<</whatever/aa.pdf.gpg>>\n---\n",
+            "To: 22@xy.com\nSubject: Test 1\n\nHola Mini ## Mouse,\nthis is your email: 22@xy.com22@xy.com.\n\nGracias\n\n<</whatever/bb.pdf.gpg>>\n---\n"]
     assert expected == actual
   end
 end

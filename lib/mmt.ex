@@ -81,7 +81,7 @@ defmodule Mmt do
       {:ok, _} ->
         mails = prep_emails(config, template)
         if dryrun do
-          IO.puts(do_dryrun(mails, subj))
+          IO.puts(do_dryrun(mails, subj, config))
         else
           do_send(mails, subj, config)
         end
@@ -152,17 +152,30 @@ defmodule Mmt do
   @doc """
   Prepares the text to be printed in case of a dry run.
   """
-  def do_dryrun(mails, subj) do
+  def do_dryrun(mails, subj, config) do
     mails |> Enum.map(fn {eaddr, body} ->
       body = String.rstrip(body)
-      """
-      To: #{eaddr}
-      Subject: #{subj}
+      case get_attachment_path(eaddr, config) do
+        nil ->
+          """
+          To: #{eaddr}
+          Subject: #{subj}
 
-      #{body}
-      ---
-      """
-      end)
+          #{body}
+          ---
+          """
+        atp ->
+          """
+          To: #{eaddr}
+          Subject: #{subj}
+
+          #{body}
+
+          <<#{atp}>>
+          ---
+          """
+      end
+    end)
   end
 
 

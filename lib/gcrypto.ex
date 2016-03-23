@@ -24,7 +24,7 @@ defmodule GCrypto do
   """
 
   def get_valid_uids() do
-    {uids, ec} = System.cmd("gpg", ["--charset", "utf-8", "--display-charset", "utf-8", "--batch", "--no-tty", "--status-fd", "2", "--with-colons", "--list-public-keys", "--fixed-list-mode"], [into: [], stderr_to_stdout: true])
+    {uids, ec} = System.cmd("gpg", ["--no-permission-warning", "--charset", "utf-8", "--display-charset", "utf-8", "--batch", "--no-tty", "--status-fd", "2", "--with-colons", "--list-public-keys", "--fixed-list-mode"], [into: [], stderr_to_stdout: true])
     case ec do
       0 -> {:ok, filter_uids(uids)}
       _ -> {:error, {uids, ec}}

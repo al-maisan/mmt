@@ -89,6 +89,20 @@ defmodule MmtTest do
   end
 
 
+  test "construct_cmd() w/o attachments and headers" do
+    path = "/tmp/mmt.kTuJU.eml"
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail"}}
+    subj = "hello from mmt"
+    addr = "r2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" r2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
   test "construct_cmd() w/o attachments" do
     path = "/tmp/mmt.kTuJU.eml"
     config = %{
@@ -99,6 +113,23 @@ defmodule MmtTest do
     addr = "r2@ahfdo.cc"
     mprog = config["general"]["mail-prog"]
     expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a \"From: Frodo Baggins <mmt@chlo.cc>\" r2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() w/o attachments and with both headers" do
+    path = "/tmp/mmt.kTuJU.eml"
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "CC" => "x@y.zz  ,  a@bb.cc,   f@g.hh",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    subj = "hello from mmt"
+    addr = "r2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a \"Cc: a@bb.cc, f@g.hh, x@y.zz\" -a \"From: Frodo Baggins <mmt@chlo.cc>\" r2@ahfdo.cc"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
     assert to_char_list(expected) == actual

@@ -143,10 +143,11 @@ defmodule Mmt do
     else
       "cat #{path} | #{mprog} -s \"#{subj}\""
     end
-    [cmd, (
-      prep_headers(config)
-      |> Enum.map(fn h -> "-a \"#{h}\"" end) |> Enum.join(" ")),
-     "#{eaddr}"] |> Enum.join(" ")
+    [cmd,
+     (prep_headers(config) |> Enum.map(fn h -> "-a \"#{h}\"" end) |> Enum.join(" ")),
+     "#{eaddr}"]
+    |> Enum.filter(fn s -> String.length(s) > 0 end)
+    |> Enum.join(" ")
     |> to_char_list
   end
 

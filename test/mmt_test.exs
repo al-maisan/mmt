@@ -53,6 +53,42 @@ defmodule MmtTest do
   end
 
 
+  test "prep_headers(), nothing to do" do
+    assert Mmt.prep_headers(%{"general" => %{}}) == []
+  end
+
+
+  test "prep_headers(), 'From:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    expected = ["From: Frodo Baggins <mmt@chlo.cc>"]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers(), 'Cc:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "CC" => "jk@lm.no  ,       abc@def.ghi"}}
+    expected = ["Cc: abc@def.ghi, jk@lm.no"]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers(), 'From:' and 'Cc:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "sender-email" => "nno@cckd.cc",
+                     "sender-name" => "Sam Lfhorf",
+                     "CC" => "jk@lm.no  ,       bc@def.ghi,   aa@bb.cc"}}
+    expected = [
+      "Cc: aa@bb.cc, bc@def.ghi, jk@lm.no", "From: Sam Lfhorf <nno@cckd.cc>"]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
   test "construct_cmd() w/o attachments" do
     path = "/tmp/mmt.kTuJU.eml"
     config = %{

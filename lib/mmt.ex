@@ -115,6 +115,26 @@ defmodule Mmt do
   end
 
 
+  @doc """
+  Return possibly empty list with email headers.
+  """
+  def prep_headers(config) do
+    headers = []
+
+    saddr = Map.get(config["general"], "sender-email")
+    sname = Map.get(config["general"], "sender-name")
+    if saddr != nil and sname != nil do
+      headers = ["From: #{sname} <#{saddr}>" | headers]
+    end
+    cc = Map.get(config["general"], "CC")
+    if cc != nil do
+        ccs = String.split(cc, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
+      headers = ["Cc: #{ccs}" | headers]
+    end
+    headers |> Enum.sort
+  end
+
+
   def construct_cmd(path, config, subj, eaddr) do
     saddr = Map.get(config["general"], "sender-email", "no@return.email")
     name = Map.get(config["general"], "sender-name", "Do not reply")
@@ -232,10 +252,11 @@ defmodule Mmt do
       # the first name, the rest is the surname
       [general]
       mail-prog=gnu-mail # arch linux, just 'mail' on ubuntu
-      attachment-path=/tmp
-      encrypt-attachments=true
+      #attachment-path=/tmp
+      #encrypt-attachments=true
       sender-email=rts@example.com
       sender-name=Frodo Baggins
+      #CC=weirdo@nsb.gov, cc@example.com
       [recipients]
       jd@example.com=John Doe III
       mm@gmail.com=Mickey Mouse   # trailing comment!!

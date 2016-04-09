@@ -119,7 +119,6 @@ defmodule AttmtTest do
       "recipients" => %{"jd@example.com" => "John    Doe    III",
                         "mm@gmail.com" => "Mickey     Mouse",
                         "xgt@gmx.com" => "Bugs Bunny"}}
-    error_msg = "No attachments defined at all"
     assert Attmt.check_config(config) == {:ok, "all set!"}
   end
 

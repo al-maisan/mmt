@@ -129,6 +129,45 @@ defmodule CfgFilesTest do
 
 
   @tag content: """
+    [general]
+    CC =  hello@joe.com , arhg@lhfe.ddk   
+    """
+  test "read_config(), multiple CC addresses", context do
+    expected = %{
+      "general" => %{"CC" => "hello@joe.com , arhg@lhfe.ddk"}}
+    {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
+    actual = Cfg.read_config(data)
+    assert actual == expected
+  end
+
+
+  @tag content: """
+    [general]
+    CC =  hello@joe.com
+    """
+  test "read_config(), single CC address", context do
+    expected = %{
+      "general" => %{"CC" => "hello@joe.com"}}
+    {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
+    actual = Cfg.read_config(data)
+    assert actual == expected
+  end
+
+
+  @tag content: """
+    [general]
+    CC =                    
+    """
+  test "read_config(), no CC address", context do
+    expected = %{
+      "general" => %{"CC" => ""}}
+    {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
+    actual = Cfg.read_config(data)
+    assert actual == expected
+  end
+
+
+  @tag content: """
     # Easy version
     [general]
     attachment-name=%FN%-salary-info-for-Sep-2015

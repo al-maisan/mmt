@@ -24,46 +24,63 @@ defmodule Attmt do
   """
 
   @doc """
+  Check whether we are supposed to handle attachments in first place.
+  Return `true` or `false`.
+  """
+  def attachments_present?(config) do
+    atmts = config["attachments"]
+    case atmts do
+      nil -> false
+      _ -> true
+    end
+  end
+
+
+  @doc """
   Make sure the configuration relating to attachments is correct.
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
   def check_config(config) do
-    atp = config["general"]["attachment-path"]
-    case atp do
-      nil -> {:error, "no attachment path defined"}
-      _ ->
-        atmts = config["attachments"]
-        # check for attachment definition clashes first
-        case atmts do
-          nil -> {:error, "No attachments defined at all"}
-          _ ->
-            atdefs = Dict.values(atmts)
-            counts = Enum.map(Enum.uniq(atdefs), fn x -> {x, 0} end)
-              |> Enum.into(Map.new)
-            dups = Enum.reduce(
-              atdefs, counts, fn(m, cs) -> %{cs | m => cs[m]+1} end)
-              |> Enum.filter(fn {_, v} -> v > 1 end)
-              |> Dict.keys
-              |> Enum.sort
-            if Enum.empty?(dups) do
-              if Dict.keys(atmts) === Dict.keys(config["recipients"]) do
-                {:ok, "all set!"}
-              else
-                ats = Enum.into(Dict.keys(atmts), HashSet.new)
-                rps = Enum.into(Dict.keys(config["recipients"]), HashSet.new)
-                if Enum.count(ats) < Enum.count(rps) do
-                  missing = Enum.join(Enum.sort(Set.difference(rps, ats)), ", ")
-                  {:error, "No attachments defined for: #{missing}"}
+    if attachments_present?(config) == true do
+      atp = config["general"]["attachment-path"]
+      case atp do
+        nil -> {:error, "check config: no attachment path defined"}
+        _ ->
+          atmts = config["attachments"]
+          # check for attachment definition clashes first
+          case atmts do
+            nil -> {:error, "No attachments defined at all"}
+            _ ->
+              atdefs = Dict.values(atmts)
+              counts = Enum.map(Enum.uniq(atdefs), fn x -> {x, 0} end)
+                |> Enum.into(Map.new)
+              dups = Enum.reduce(
+                atdefs, counts, fn(m, cs) -> %{cs | m => cs[m]+1} end)
+                |> Enum.filter(fn {_, v} -> v > 1 end)
+                |> Dict.keys
+                |> Enum.sort
+              if Enum.empty?(dups) do
+                if Dict.keys(atmts) === Dict.keys(config["recipients"]) do
+                  {:ok, "all set!"}
                 else
-                  missing = Enum.join(Enum.sort(Set.difference(ats, rps)), ", ")
-                  {:error, "Unlisted recipients: #{missing}"}
+                  ats = Enum.into(Dict.keys(atmts), HashSet.new)
+                  rps = Enum.into(Dict.keys(config["recipients"]), HashSet.new)
+                  if Enum.count(ats) < Enum.count(rps) do
+                    missing = Enum.join(Enum.sort(Set.difference(rps, ats)), ", ")
+                    {:error, "No attachments defined for: #{missing}"}
+                  else
+                    missing = Enum.join(Enum.sort(Set.difference(ats, rps)), ", ")
+                    {:error, "Unlisted recipients: #{missing}"}
+                  end
                 end
+              else
+                dups = Enum.join(dups, ", ")
+                {:error, "Attachment(s) (#{dups}) used for more than one email"}
               end
-            else
-              dups = Enum.join(dups, ", ")
-              {:error, "Attachment(s) (#{dups}) used for more than one email"}
-            end
-        end
+          end
+      end
+    else
+      {:ok, "all set!"}
     end
   end
 
@@ -75,7 +92,7 @@ defmodule Attmt do
   def check_files(config) do
     atp = config["general"]["attachment-path"]
     case atp do
-      nil -> {:error, "no attachment path defined"}
+      nil -> {:error, "check files: no attachment path defined"}
       _ ->
         case dir_readable?(atp) do
           false ->
@@ -125,39 +142,42 @@ defmodule Attmt do
   """
   def prepare_attachments(config) do
     failed = false
+    atmts_present = attachments_present?(config)
     error = nil
     do_encrypt = Cfg.convert_value(config["general"]["encrypt-attachments"])
 
-    if do_encrypt == true do
-      case GCrypto.check_keys(config) do
-        {:ok, _} -> nil
-        errordata ->
-          failed = true
-          error = errordata
+    if atmts_present do
+      if do_encrypt == true do
+        case GCrypto.check_keys(config) do
+          {:ok, _} -> nil
+          errordata ->
+            failed = true
+            error = errordata
+        end
       end
-    end
-    if not failed do
-      case check_config(config) do
-        {:ok, _} -> nil
-        errordata ->
-          failed = true
-          error = errordata
+      if not failed do
+        case check_config(config) do
+          {:ok, _} -> nil
+          errordata ->
+            failed = true
+            error = errordata
+        end
       end
-    end
-    if not failed do
-      case check_files(config) do
-        {:ok, _} -> nil
-        errordata ->
-          failed = true
-          error = errordata
+      if not failed do
+        case check_files(config) do
+          {:ok, _} -> nil
+          errordata ->
+            failed = true
+            error = errordata
+        end
       end
-    end
-    if (not failed) and do_encrypt do
-      case encrypt_attachments(config) do
-        {:ok, _} -> nil
-        errordata ->
-          failed = true
-          error = errordata
+      if (not failed) and do_encrypt do
+        case encrypt_attachments(config) do
+          {:ok, _} -> nil
+          errordata ->
+            failed = true
+            error = errordata
+        end
       end
     end
     if not failed do

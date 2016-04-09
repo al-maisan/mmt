@@ -24,6 +24,44 @@ defmodule AttmtTest do
   """
   use ExUnit.Case
 
+  test "attachments_present?(), happy case" do
+    config = %{
+      "general" => %{"attachment-path" => "/whatever"},
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf"}}
+    assert Attmt.attachments_present?(config) == true
+  end
+
+
+  test "attachments_present?(), missing attachment path" do
+    config = %{
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf"}}
+    assert Attmt.attachments_present?(config) == true
+  end
+
+
+  test "attachments_present?(), no attachments" do
+    config = %{
+      "general" => %{"attachment-path" => "/whatever"},
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"}}
+    assert Attmt.attachments_present?(config) == false
+  end
+
+
+  test "attachments_present?(), no attachments and no attachment path" do
+    config = %{
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse"}}
+    assert Attmt.attachments_present?(config) == false
+  end
+
+
   test "check_config(), happy case" do
     config = %{
       "general" => %{"attachment-path" => "/whatever"},
@@ -41,7 +79,7 @@ defmodule AttmtTest do
                         "mm@gmail.com" => "Mickey     Mouse"},
       "attachments" => %{"jd@example.com" => "aa.pdf",
                          "mm@gmail.com" => "bb.pdf"}}
-    error_msg = "no attachment path defined"
+    error_msg = "check config: no attachment path defined"
     assert Attmt.check_config(config) == {:error, error_msg}
   end
 
@@ -82,7 +120,7 @@ defmodule AttmtTest do
                         "mm@gmail.com" => "Mickey     Mouse",
                         "xgt@gmx.com" => "Bugs Bunny"}}
     error_msg = "No attachments defined at all"
-    assert Attmt.check_config(config) == {:error, error_msg}
+    assert Attmt.check_config(config) == {:ok, "all set!"}
   end
 
 
@@ -226,7 +264,7 @@ defmodule AttmtFilesTest do
                         "mm@gmail.com" => "Mickey     Mouse"},
       "attachments" => %{"jd@example.com" => "aa.pdf",
                          "mm@gmail.com" => "bb.pdf"}}
-    error_msg = "no attachment path defined"
+    error_msg = "check files: no attachment path defined"
     assert Attmt.check_files(config) == {:error, error_msg}
   end
 

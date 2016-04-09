@@ -136,17 +136,18 @@ defmodule Mmt do
 
 
   def construct_cmd(path, config, subj, eaddr) do
-    saddr = Map.get(config["general"], "sender-email", "no@return.email")
-    name = Map.get(config["general"], "sender-name", "Do not reply")
     mprog = Map.get(config["general"], "mail-prog", "mail")
     atp = get_attachment_path(eaddr, config)
-    header = "From: #{name} <#{saddr}>"
     cmd = if atp != nil do
-      "cat #{path} | #{mprog} -a \"#{header}\" -s \"#{subj}\" -A #{atp} #{eaddr}"
+      "cat #{path} | #{mprog} -s \"#{subj}\" -A #{atp}"
     else
-      "cat #{path} | #{mprog} -a \"#{header}\" -s \"#{subj}\" #{eaddr}"
+      "cat #{path} | #{mprog} -s \"#{subj}\""
     end
-    to_char_list(cmd)
+    [cmd, (
+      prep_headers(config)
+      |> Enum.map(fn h -> "-a \"#{h}\"" end) |> Enum.join(" ")),
+     "#{eaddr}"] |> Enum.join(" ")
+    |> to_char_list
   end
 
 

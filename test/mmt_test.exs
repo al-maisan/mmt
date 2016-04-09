@@ -98,7 +98,7 @@ defmodule MmtTest do
     subj = "hello from mmt"
     addr = "r2@ahfdo.cc"
     mprog = config["general"]["mail-prog"]
-    expected = "cat #{path} | #{mprog} -a \"From: Frodo Baggins <mmt@chlo.cc>\" -s \"hello from mmt\" r2@ahfdo.cc"
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a \"From: Frodo Baggins <mmt@chlo.cc>\" r2@ahfdo.cc"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
     assert to_char_list(expected) == actual
@@ -119,7 +119,7 @@ defmodule MmtTest do
     subj = "hello from mmt"
     addr = "cd@gmail.com"
     mprog = config["general"]["mail-prog"]
-    expected = "cat #{path} | #{mprog} -a \"From: Frodo Baggins <mmt@chlo.cc>\" -s \"hello from mmt\" -A #{atp}/bb.pdf.gpg cd@gmail.com"
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -A #{atp}/bb.pdf.gpg -a \"From: Frodo Baggins <mmt@chlo.cc>\" cd@gmail.com"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
     assert to_char_list(expected) == actual
@@ -139,7 +139,7 @@ defmodule MmtTest do
     subj = "hello from mmt"
     addr = "ab@example.com"
     mprog = config["general"]["mail-prog"]
-    expected = "cat #{path} | #{mprog} -a \"From: Frodo Baggins <mmt@chlo.cc>\" -s \"hello from mmt\" -A #{atp}/aa.pdf ab@example.com"
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -A #{atp}/aa.pdf -a \"From: Frodo Baggins <mmt@chlo.cc>\" ab@example.com"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
     assert to_char_list(expected) == actual

@@ -81,6 +81,12 @@ defmodule GCryptoTest do
   end
 
 
+  test "get_valid_uids()" do
+    expected =  {:ok, ["jd@example.com", "mm@gmail.com"]}
+    assert GCrypto.get_valid_uids() == expected
+  end
+
+
   test "check_keys() with empty uid list" do
     config = %{"general" => %{"encrypt-attachments" => "true"},
                "recipients" => %{

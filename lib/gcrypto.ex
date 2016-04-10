@@ -23,8 +23,8 @@ defmodule GCrypto do
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
   """
 
-  def get_valid_uids() do
-    {uids, ec} = System.cmd("gpg", ["--no-permission-warning", "--charset", "utf-8", "--display-charset", "utf-8", "--batch", "--no-tty", "--status-fd", "2", "--with-colons", "--list-public-keys", "--fixed-list-mode"], [into: [], stderr_to_stdout: true])
+  def get_valid_uids(homedir \\ "test/keyring") do
+    {uids, ec} = System.cmd("gpg2", ["--homedir", homedir, "--no-permission-warning", "--charset", "utf-8", "--display-charset", "utf-8", "--batch", "--no-tty", "--status-fd", "2", "--with-colons", "--list-public-keys", "--fixed-list-mode"], [into: [], stderr_to_stdout: true])
     case ec do
       0 -> {:ok, filter_uids(uids)}
       _ -> {:error, {uids, ec}}
@@ -52,7 +52,7 @@ defmodule GCrypto do
 
   def encrypt(path, recipient, args \\ []) do
     defaultargs = ["--batch", "--no-tty", "--status-fd", "2", "-r", recipient, "-e", path]
-    {out, ec} = System.cmd("gpg", List.flatten([args, defaultargs]), [into: [], stderr_to_stdout: true])
+    {out, ec} = System.cmd("gpg2", List.flatten([args, defaultargs]), [into: [], stderr_to_stdout: true])
     case ec do
       0 -> {:ok, path <> ".gpg"}
       _ -> {:error, {out, ec}}
@@ -63,7 +63,7 @@ defmodule GCrypto do
   def check_keys(config, uids \\ nil) do
     # make sure we have gpg keys for all recipients
     if !uids do
-      {:ok, uids} = GCrypto.get_valid_uids()
+      {:ok, uids} = GCrypto.get_valid_uids(System.get_env("HOME"))
     end
     recipients = Dict.keys(config["recipients"])
     missing_keys = Set.difference(Enum.into(recipients, HashSet.new),

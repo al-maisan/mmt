@@ -156,8 +156,25 @@ defmodule MmtTest do
   end
 
 
+  test "construct_cmd() w/o attachments and with Reply-To header" do
+    path = "/tmp/mmt.kTuJX.eml"
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "Reply-To" => "x@y.zz  ",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    subj = "hello from mmt"
+    addr = "r2d2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a \"From: Frodo Baggins <mmt@chlo.cc>\" -a \"Reply-To: x@y.zz\" r2d2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
   test "construct_cmd() with encrypted attachments" do
-    path = "/tmp/mmt.kTuJU.eml"
+    path = "/tmp/mmt.kTuJZ.eml"
     atp = "/tmp/atp"
     config = %{
       "general" => %{"mail-prog" => "gnu-mail",

@@ -133,7 +133,7 @@ defmodule Mmt do
     end
     rt = Map.get(config["general"], "Reply-To")
     if rt != nil do
-      headers = ["Reply-To: #{rt}" | headers]
+      headers = ["Reply-To: #{String.trim(rt)}" | headers]
     end
     headers |> Enum.sort
   end

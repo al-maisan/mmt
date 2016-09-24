@@ -126,14 +126,17 @@ defmodule Mmt do
     if saddr != nil and sname != nil do
       headers = ["From: #{sname} <#{saddr}>" | headers]
     end
+    # According to https://www.ietf.org/rfc/rfc2822.txt Cc and Reply-To have
+    # the same form/syntax
     cc = Map.get(config["general"], "CC")
     if cc != nil do
         ccs = String.split(cc, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
-      headers = ["Cc: #{ccs}" | headers]
+      headers = ["Cc: #{String.trim(ccs)}" | headers]
     end
     rt = Map.get(config["general"], "Reply-To")
     if rt != nil do
-      headers = ["Reply-To: #{String.trim(rt)}" | headers]
+        rts = String.split(rt, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
+      headers = ["Reply-To: #{String.trim(rts)}" | headers]
     end
     headers |> Enum.sort
   end

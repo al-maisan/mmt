@@ -98,6 +98,15 @@ defmodule MmtTest do
   end
 
 
+  test "prep_headers(), 'Reply-To:' header, multiple addresses" do
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "Reply-To" => "jk@lm.no 	,   	ab@kfd.cc"}}
+    expected = ["Reply-To: ab@kfd.cc, jk@lm.no"]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
   test "prep_headers(), 'From:' and 'Reply-To:' header" do
     config = %{
       "general" => %{"mail-prog" => "gnu-mail",
@@ -167,6 +176,23 @@ defmodule MmtTest do
     addr = "r2d2@ahfdo.cc"
     mprog = config["general"]["mail-prog"]
     expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a \"From: Frodo Baggins <mmt@chlo.cc>\" -a \"Reply-To: x@y.zz\" r2d2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() w/o attachments and with Reply-To header, multi address" do
+    path = "/tmp/mmt.kTuKX.eml"
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "Reply-To" => "x@y.zz  , 	add@kdhfo.co",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    subj = "hello from mmt"
+    addr = "r2d2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a \"From: Frodo Baggins <mmt@chlo.cc>\" -a \"Reply-To: add@kdhfo.co, x@y.zz\" r2d2@ahfdo.cc"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
     assert to_char_list(expected) == actual

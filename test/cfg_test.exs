@@ -156,7 +156,7 @@ defmodule CfgFilesTest do
 
   @tag content: """
     [general]
-    Reply-To =  rp@hello_X_joe.com
+    Reply-To =  	rp@hello_X_joe.com	   
     """
   test "read_config(), single Reply-To address", context do
     expected = %{

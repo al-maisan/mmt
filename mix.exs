@@ -4,7 +4,7 @@ defmodule Mmt.Mixfile do
   def project do
     [app: :mmt,
      version: "0.0.1",
-     elixir: "~> 1.1-dev",
+     elixir: "~> 1.3-dev",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      escript: escript,
@@ -32,6 +32,6 @@ defmodule Mmt.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [{:credo, "~> 0.3.0"}]
   end
 end

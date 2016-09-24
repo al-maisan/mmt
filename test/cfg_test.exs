@@ -156,6 +156,19 @@ defmodule CfgFilesTest do
 
   @tag content: """
     [general]
+    Reply-To =  rp@hello_X_joe.com
+    """
+  test "read_config(), single Reply-To address", context do
+    expected = %{
+      "general" => %{"Reply-To" => "rp@hello_X_joe.com"}}
+    {:ok, data} = File.open(context[:fpath], fn(f) -> IO.binread(f, :all) end)
+    actual = Cfg.read_config(data)
+    assert actual == expected
+  end
+
+
+  @tag content: """
+    [general]
     CC =                    
     """
   test "read_config(), no CC address", context do

@@ -131,6 +131,10 @@ defmodule Mmt do
         ccs = String.split(cc, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
       headers = ["Cc: #{ccs}" | headers]
     end
+    rt = Map.get(config["general"], "Reply-To")
+    if rt != nil do
+      headers = ["Reply-To: #{rt}" | headers]
+    end
     headers |> Enum.sort
   end
 

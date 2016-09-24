@@ -89,6 +89,26 @@ defmodule MmtTest do
   end
 
 
+  test "prep_headers(), 'Reply-To:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "Reply-To" => "jk@lm.no"}}
+    expected = ["Reply-To: jk@lm.no"]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers(), 'From:' and 'Reply-To:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "gnu-mail",
+                     "sender-email" => "nno@cckd.cc",
+                     "sender-name" => "Sam Lfhorf",
+                     "Reply-To" => "aa@bb.cc"}}
+    expected = ["From: Sam Lfhorf <nno@cckd.cc>", "Reply-To: aa@bb.cc"]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
   test "construct_cmd() w/o attachments and headers" do
     path = "/tmp/mmt.kTuJU.eml"
     config = %{

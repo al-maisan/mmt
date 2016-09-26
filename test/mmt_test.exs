@@ -71,7 +71,7 @@ defmodule MmtTest do
   test "prep_headers(), 'Cc:' header" do
     config = %{
       "general" => %{"mail-prog" => "gnu-mail",
-                     "CC" => "jk@lm.no  ,       abc@def.ghi"}}
+                     "Cc" => "jk@lm.no  ,       abc@def.ghi"}}
     expected = ["Cc: abc@def.ghi, jk@lm.no"]
     assert Mmt.prep_headers(config) == expected
   end
@@ -82,7 +82,7 @@ defmodule MmtTest do
       "general" => %{"mail-prog" => "gnu-mail",
                      "sender-email" => "nno@cckd.cc",
                      "sender-name" => "Sam Lfhorf",
-                     "CC" => "jk@lm.no  ,       bc@def.ghi,   aa@bb.cc"}}
+                     "Cc" => "jk@lm.no  ,       bc@def.ghi,   aa@bb.cc"}}
     expected = [
       "Cc: aa@bb.cc, bc@def.ghi, jk@lm.no", "From: Sam Lfhorf <nno@cckd.cc>"]
     assert Mmt.prep_headers(config) == expected
@@ -152,7 +152,7 @@ defmodule MmtTest do
     path = "/tmp/mmt.kTuJU.eml"
     config = %{
       "general" => %{"mail-prog" => "gnu-mail",
-                     "CC" => "x@y.zz  ,  a@bb.cc,   f@g.hh",
+                     "Cc" => "x@y.zz  ,  a@bb.cc,   f@g.hh",
                      "sender-email" => "mmt@chlo.cc",
                      "sender-name" => "Frodo Baggins"}}
     subj = "hello from mmt"

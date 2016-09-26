@@ -128,7 +128,7 @@ defmodule Mmt do
     end
     # According to https://www.ietf.org/rfc/rfc2822.txt Cc and Reply-To have
     # the same form/syntax
-    cc = Map.get(config["general"], "CC")
+    cc = Map.get(config["general"], "Cc")
     if cc != nil do
         ccs = String.split(cc, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
       headers = ["Cc: #{String.trim(ccs)}" | headers]
@@ -265,7 +265,7 @@ defmodule Mmt do
       #encrypt-attachments=true
       sender-email=rts@example.com
       sender-name=Frodo Baggins
-      #CC=weirdo@nsb.gov, cc@example.com
+      #Cc=weirdo@nsb.gov, cc@example.com
       [recipients]
       jd@example.com=John Doe III
       mm@gmail.com=Mickey Mouse   # trailing comment!!

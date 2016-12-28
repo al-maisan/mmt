@@ -135,9 +135,27 @@ defmodule AttmtTest do
                          "mm@gmail.com" => "bb.pdf",
                          "mn@gmail.com" => "aa.pdf",
                          "mo@gmail.com" => "xx.pdf",
-                         "xtg@gmx.com" => "bb.pdf"}}
+                         "xgt@gmx.com" => "bb.pdf"}}
     error_msg = "Attachment(s) (aa.pdf, bb.pdf) used for more than one email"
     assert Attmt.check_config(config) == {:error, error_msg}
+  end
+
+
+  test "check_config(), same attachment defined for 1+ email and allow-dups flag set" do
+    config = %{
+      "general" => %{"attachment-path" => "/whatever",
+                     "allow-duplicate-attachments" => true},
+      "recipients" => %{"jd@example.com" => "John    Doe    III",
+                        "mm@gmail.com" => "Mickey     Mouse",
+                        "mn@gmail.com" => "Goofy Goose",
+                        "mo@gmail.com" => "Daisy Maze",
+                        "xgt@gmx.com" => "Bugs Bunny"},
+      "attachments" => %{"jd@example.com" => "aa.pdf",
+                         "mm@gmail.com" => "bb.pdf",
+                         "mn@gmail.com" => "aa.pdf",
+                         "mo@gmail.com" => "xx.pdf",
+                         "xgt@gmx.com" => "bb.pdf"}}
+    assert Attmt.check_config(config) == {:ok, "all set!"}
   end
 end
 

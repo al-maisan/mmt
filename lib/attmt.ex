@@ -43,6 +43,7 @@ defmodule Attmt do
   def check_config(config) do
     if attachments_present?(config) == true do
       atp = config["general"]["attachment-path"]
+      allow_datts = config["general"]["allow-duplicate-attachments"]
       case atp do
         nil -> {:error, "check config: no attachment path defined"}
         _ ->
@@ -59,7 +60,7 @@ defmodule Attmt do
                 |> Enum.filter(fn {_, v} -> v > 1 end)
                 |> Dict.keys
                 |> Enum.sort
-              if Enum.empty?(dups) do
+              if Enum.empty?(dups) or allow_datts do
                 if Dict.keys(atmts) === Dict.keys(config["recipients"]) do
                   {:ok, "all set!"}
                 else

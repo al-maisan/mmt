@@ -52,25 +52,25 @@ defmodule Attmt do
           case atmts do
             nil -> {:error, "No attachments defined at all"}
             _ ->
-              atdefs = Dict.values(atmts)
+              atdefs = Map.values(atmts)
               counts = Enum.map(Enum.uniq(atdefs), fn x -> {x, 0} end)
                 |> Enum.into(Map.new)
               dups = Enum.reduce(
                 atdefs, counts, fn(m, cs) -> %{cs | m => cs[m]+1} end)
                 |> Enum.filter(fn {_, v} -> v > 1 end)
-                |> Dict.keys
+                |> Keyword.keys
                 |> Enum.sort
               if Enum.empty?(dups) or allow_datts do
-                if Dict.keys(atmts) === Dict.keys(config["recipients"]) do
+                if Map.keys(atmts) === Map.keys(config["recipients"]) do
                   {:ok, "all set!"}
                 else
-                  ats = Enum.into(Dict.keys(atmts), HashSet.new)
-                  rps = Enum.into(Dict.keys(config["recipients"]), HashSet.new)
+                  ats = Enum.into(Map.keys(atmts), MapSet.new)
+                  rps = Enum.into(Map.keys(config["recipients"]), MapSet.new)
                   if Enum.count(ats) < Enum.count(rps) do
-                    missing = Enum.join(Enum.sort(Set.difference(rps, ats)), ", ")
+                    missing = Enum.join(Enum.sort(MapSet.difference(rps, ats)), ", ")
                     {:error, "No attachments defined for: #{missing}"}
                   else
-                    missing = Enum.join(Enum.sort(Set.difference(ats, rps)), ", ")
+                    missing = Enum.join(Enum.sort(MapSet.difference(ats, rps)), ", ")
                     {:error, "Unlisted recipients: #{missing}"}
                   end
                 end
@@ -103,7 +103,7 @@ defmodule Attmt do
             case config["attachments"] do
               nil -> {:ok, "all set!"}
               afs ->
-                missing = Enum.filter(Dict.values(afs), fn af ->
+                missing = Enum.filter(Map.values(afs), fn af ->
                   afp = atp <> "/" <> af
                   not file_readable?(afp) end)
                 if Enum.empty?(missing) do
@@ -142,49 +142,41 @@ defmodule Attmt do
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
   def prepare_attachments(config) do
-    failed = false
     atmts_present = attachments_present?(config)
-    error = nil
     do_encrypt = Cfg.convert_value(config["general"]["encrypt-attachments"])
 
     if atmts_present do
-      if do_encrypt == true do
+      {failed, error} = if do_encrypt == true do
         case GCrypto.check_keys(config) do
-          {:ok, _} -> nil
-          errordata ->
-            failed = true
-            error = errordata
+          {:ok, _} -> {nil, nil}
+          errordata -> {true, errordata}
         end
       end
-      if not failed do
+      {failed, error} = if not failed do
         case check_config(config) do
-          {:ok, _} -> nil
-          errordata ->
-            failed = true
-            error = errordata
+          {:ok, _} -> {nil, nil}
+          errordata -> {true, errordata}
+        end
+      end
+      {failed, error} = if not failed do
+        case check_files(config) do
+          {:ok, _} -> {nil, nil}
+          errordata -> {true, errordata}
+        end
+      end
+      {failed, error} = if (not failed) and do_encrypt do
+        case encrypt_attachments(config) do
+          {:ok, _} -> {nil, nil}
+          errordata -> {true, errordata}
         end
       end
       if not failed do
-        case check_files(config) do
-          {:ok, _} -> nil
-          errordata ->
-            failed = true
-            error = errordata
-        end
+        {:ok, "all set!"}
+      else
+        error
       end
-      if (not failed) and do_encrypt do
-        case encrypt_attachments(config) do
-          {:ok, _} -> nil
-          errordata ->
-            failed = true
-            error = errordata
-        end
-      end
-    end
-    if not failed do
-      {:ok, "all set!"}
     else
-      error
+      {:ok, "all set!"}
     end
   end
 
@@ -196,7 +188,7 @@ defmodule Attmt do
   Return a tuple of `{:ok, "all set!"}`, or `{:error, error_msg}`
   """
   def encrypt_attachments(config, gpgargs \\ [], efunc \\ &GCrypto.encrypt/3) do
-    me = self
+    me = self()
     atp = config["general"]["attachment-path"]
     errors = Enum.map(config["attachments"], fn {eaddr, atf} ->
         spawn_link fn ->

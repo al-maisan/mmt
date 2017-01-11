@@ -43,8 +43,8 @@ defmodule GCrypto do
     # extract the email addresses
     |> Enum.map(fn x -> Regex.replace(~r/^.+<([^>]+)>:*$/, x, "\\1") end)
     # make unique
-    |> Enum.into(HashSet.new)
-    |> Set.to_list
+    |> Enum.into(MapSet.new)
+    |> MapSet.to_list
     # .. and sort
     |> Enum.sort
   end
@@ -62,14 +62,22 @@ defmodule GCrypto do
 
   def check_keys(config, uids \\ nil) do
     # make sure we have gpg keys for all recipients
-    if !uids do
-      {:ok, uids} = GCrypto.get_valid_uids(System.get_env("HOME"))
+    uids = case uids do
+      nil ->
+        {:ok, uids} = GCrypto.get_valid_uids(System.get_env("HOME"))
+        uids
+      _ -> uids
     end
-    recipients = Dict.keys(config["recipients"])
-    missing_keys = Set.difference(Enum.into(recipients, HashSet.new),
-                                  Enum.into(uids, HashSet.new))
-    if Set.size(missing_keys) > 0 do
-      error = "No gpg keys for:\n" <> Enum.reduce(Enum.map(missing_keys, fn x -> "  #{x}\n" end), "", fn a, b -> a <> b end)
+    recipients = Map.keys(config["recipients"])
+    missing_keys = MapSet.difference(Enum.into(recipients, MapSet.new),
+                                     Enum.into(uids, MapSet.new))
+      |> MapSet.to_list
+      |> Enum.sort
+      |> Enum.reverse
+      |> Enum.map(fn x -> "  #{x}\n" end)
+
+    if Enum.count(missing_keys) > 0 do
+      error = "No gpg keys for:\n" <> Enum.reduce(missing_keys, "", fn a, b -> a <> b end)
       {:error, error}
     else
       {:ok, "all set!"}

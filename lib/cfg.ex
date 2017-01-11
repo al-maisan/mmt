@@ -87,26 +87,28 @@ defmodule Cfg do
     { :ok, rx } = Regex.compile(~S"\[(\w+)\]([^[]*)", "ums")
     content = Regex.scan(rx, config, [capture: :all_but_first])
     sections = for [k, _v] <- content, do: k
-    errors = []
 
     {_, counts} = Enum.map_reduce(
-      sections, HashDict.new,
-      fn(x, acc) -> {x, Dict.put(acc, x, Dict.get(acc, x, 0) + 1)} end)
+      sections, Map.new,
+      fn(x, acc) -> {x, Map.put(acc, x, Map.get(acc, x, 0) + 1)} end)
 
     # Check for missing sections
     missing = (for k <- ["recipients"], counts[k] == nil, do: k)
       |> Enum.sort
-    if Enum.count(missing) > 0 do
-      error = "missing sections: '" <> Enum.join(missing, ", ") <> "'"
-      errors = [error | errors]
+    errors = if Enum.count(missing) > 0 do
+      ["missing sections: '" <> Enum.join(missing, ", ") <> "'"]
+    else
+      []
     end
 
     # Check for repeating sections
     repeating = Enum.filter(counts, fn({_k, v}) -> v > 1 end)
-    if Enum.count(repeating) > 0 do
+    errors = if Enum.count(repeating) > 0 do
       repeating = (for {k, _v} <- repeating, do: k) |> Enum.sort
       error = "repeating sections: '" <> Enum.join(repeating, ", ") <> "'"
-      errors = [error | errors]
+      [error | errors]
+    else
+      errors
     end
 
     if Enum.count(errors) > 0 do

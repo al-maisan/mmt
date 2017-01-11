@@ -119,24 +119,28 @@ defmodule Mmt do
   Return possibly empty list with email headers.
   """
   def prep_headers(config) do
-    headers = []
-
     saddr = Map.get(config["general"], "sender-email")
     sname = Map.get(config["general"], "sender-name")
-    if saddr != nil and sname != nil do
-      headers = ["From: #{sname} <#{saddr}>" | headers]
+    headers = if saddr != nil and sname != nil do
+      ["From: #{sname} <#{saddr}>"]
+    else
+      []
     end
     # According to https://www.ietf.org/rfc/rfc2822.txt Cc and Reply-To have
     # the same form/syntax
     cc = Map.get(config["general"], "Cc")
-    if cc != nil do
-        ccs = String.split(cc, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
-      headers = ["Cc: #{String.trim(ccs)}" | headers]
+    headers = if cc != nil do
+      ccs = String.split(cc, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
+      ["Cc: #{String.trim(ccs)}" | headers]
+    else
+      headers
     end
     rt = Map.get(config["general"], "Reply-To")
-    if rt != nil do
-        rts = String.split(rt, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
-      headers = ["Reply-To: #{String.trim(rts)}" | headers]
+    headers = if rt != nil do
+      rts = String.split(rt, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
+      ["Reply-To: #{String.trim(rts)}" | headers]
+    else
+      headers
     end
     headers |> Enum.sort
   end

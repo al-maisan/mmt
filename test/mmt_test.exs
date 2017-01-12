@@ -466,6 +466,13 @@ defmodule MmtTest do
   end
 
 
+  test "parse_name_data() with additional malformed key/value pairs" do
+    data = "   First  M1	  M2  M3  	Last |  	CN %	111| PX=DyHich5	  "
+    assert_raise(RuntimeError, "Invalid config: CN %	111",
+                 fn -> Mmt.parse_name_data(data) end)
+  end
+
+
   test "parse_name_data() with additional key/value pairs that override FN" do
     data = "   First  M1	  M2  M3  	Last |  	CN =	Timo| FN=DyHich5  "
     expected = %{"FN" => "DyHich5", "LN" => "M1 M2 M3 Last", "CN" => "Timo" }

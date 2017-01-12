@@ -253,11 +253,20 @@ defmodule Mmt do
   """
   def parse_name_data(name_data) do
     if String.length(name_data) > 0 do
-      [name | _data] = String.split(name_data, "|", trim: true)
-        |> Enum.map(&String.trim/1)
+      [name | data] = String.split(name_data, "|", trim: true)
+      |> Enum.map(&String.trim/1)
       [fname | lnames] = String.split(name, ~r{\s+}, trim: true)
       result = %{ "FN" => fname}
-      Map.put(result, "LN", Enum.join(lnames, " "))
+      result = Map.put(result, "LN", Enum.join(lnames, " "))
+      try do
+        Enum.reduce(data, result, fn x, acc ->
+            [k, v] = Regex.split(~r/=/, x)
+            |> Enum.map(&String.trim/1)
+             Map.put(acc, k, v)
+          end)
+      rescue
+        e in MatchError -> raise "Invalid config: #{e.term}"
+      end
     else
       %{}
     end

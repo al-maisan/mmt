@@ -331,7 +331,6 @@ defmodule AttmtFilesTest do
 
     {:ok, cwd} = File.cwd()
     {:error, message} = Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"])
-    IO.puts("\n#{message}")
     gre_string = """
       gpg: ab@example.com: skipped: No public key
       .*

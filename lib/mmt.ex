@@ -231,9 +231,9 @@ defmodule Mmt do
   """
   def prep_email({template, eaddr, name}) do
     body = Regex.replace(~r/%EA%/, template, eaddr, global: true)
-    [fname | lnames] = String.split(name, ~r{\s+}, trim: true)
-    body = Regex.replace(~r/%FN%/, body, fname, global: true)
-    body = Regex.replace(~r/%LN%/, body, Enum.join(lnames, " "), global: true)
+    nd = parse_name_data(name)
+    body = Regex.replace(~r/%FN%/, body, nd["FN"], global: true)
+    body = Regex.replace(~r/%LN%/, body, nd["LN"], global: true)
 
     {eaddr, body}
   end

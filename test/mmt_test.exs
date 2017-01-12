@@ -325,7 +325,7 @@ defmodule MmtTest do
 
       A | B | C
       """
-    actual = Mmt.prep_email({template, "3@xy.com", "Ab Cd|T1=A|T2=B|T3=C)"})
+    actual = Mmt.prep_email({template, "3@xy.com", "Ab Cd|T1=A|T2=B|T3=C"})
     assert {"3@xy.com", body} == actual
   end
 

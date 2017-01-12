@@ -234,6 +234,13 @@ defmodule Mmt do
     nd = parse_name_data(name)
     body = Regex.replace(~r/%FN%/, body, nd["FN"], global: true)
     body = Regex.replace(~r/%LN%/, body, nd["LN"], global: true)
+    body = Enum.reduce(nd, body, fn {k,v}, acc ->
+        if k != "FN" and k != "LN" do
+          Regex.replace(~r/%#{k}%/, acc, v, global: true)
+        else
+          acc
+        end
+      end)
 
     {eaddr, body}
   end

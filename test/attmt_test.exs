@@ -311,16 +311,10 @@ defmodule AttmtFilesTest do
       "attachments" => %{"jd@example.com" => "aa.pdf",
                          "mm@gmail.com" => "bb.pdf",
                          "mx@gmail.com" => "cc.pdf"}}
-    expected = {
-      :error,
-      """
-      gpg: mx@gmail.com: skipped: No public key
-      [GNUPG:] INV_RECP 1 mx@gmail.com
-      [GNUPG:] FAILURE encrypt 9
-      gpg: #{context[:tpath]}/cc.pdf: encryption failed: No public key
-      """}
     {:ok, cwd} = File.cwd()
-    assert Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"]) == expected
+    {:error, message} = Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"])
+    gre = ~r/gpg: mx@gmail.com: skipped: No public key.*cc.pdf: encryption failed: No public key/s
+    assert Regex.match?(gre, message)
     {:ok, atfs} = File.ls(context[:tpath])
     assert Enum.sort(atfs) == ["aa.pdf", "aa.pdf.gpg", "bb.pdf", "bb.pdf.gpg", "cc.pdf"]
   end
@@ -334,21 +328,22 @@ defmodule AttmtFilesTest do
                         "cd@gmail.com" => "Mickey     Mouse"},
       "attachments" => %{"ab@example.com" => "aa.pdf",
                          "cd@gmail.com" => "bb.pdf"}}
-    expected = {
-      :error,
-      """
-      gpg: ab@example.com: skipped: No public key
-      [GNUPG:] INV_RECP 1 ab@example.com
-      [GNUPG:] FAILURE encrypt 9
-      gpg: #{context[:tpath]}/aa.pdf: encryption failed: No public key
 
-      gpg: cd@gmail.com: skipped: No public key
-      [GNUPG:] INV_RECP 1 cd@gmail.com
-      [GNUPG:] FAILURE encrypt 9
-      gpg: #{context[:tpath]}/bb.pdf: encryption failed: No public key
-      """}
     {:ok, cwd} = File.cwd()
-    assert Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"]) == expected
+    {:error, message} = Attmt.encrypt_attachments(config, ["--homedir", cwd <> "/test/keyring"])
+    IO.puts("\n#{message}")
+    gre_string = """
+      gpg: ab@example.com: skipped: No public key
+      .*
+      aa.pdf: encryption failed: No public key
+      .*
+      gpg: cd@gmail.com: skipped: No public key
+      .*
+      bb.pdf: encryption failed: No public key
+      """
+        |> String.split("\n") |> Enum.join
+    gre = ~r/#{gre_string}/s
+    assert Regex.match?(gre, message)
     {:ok, atfs} = File.ls(context[:tpath])
     assert Enum.sort(atfs) == ["aa.pdf", "bb.pdf"]
   end

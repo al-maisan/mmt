@@ -294,6 +294,42 @@ defmodule MmtTest do
   end
 
 
+  test "substitution works for single arbitrary datum" do
+    template = """
+      Hello %FN% // %LN%,
+      this is your email: %EA%%EA%.
+
+      %GREETING%
+      """
+    body = """
+      Hello Mik // Mak,
+      this is your email: 3@xy.com3@xy.com.
+
+      Love :)
+      """
+    actual = Mmt.prep_email({template, "3@xy.com", "Mik Mak|GREETING=Love :)"})
+    assert {"3@xy.com", body} == actual
+  end
+
+
+  test "substitution works for arbitrary data" do
+    template = """
+      Hello %FN% // %LN%,
+      this is your email: %EA%%EA%.
+
+      %T1% | %T2% | %T3%
+      """
+    body = """
+      Hello Ab // Cd,
+      this is your email: 3@xy.com3@xy.com.
+
+      A | B | C
+      """
+    actual = Mmt.prep_email({template, "3@xy.com", "Ab Cd|T1=A|T2=B|T3=C)"})
+    assert {"3@xy.com", body} == actual
+  end
+
+
   test "dry_run() works w/o attachments" do
     config = %{
       "recipients" => %{"jd@example.com" => "John    Doe    III",

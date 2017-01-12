@@ -256,8 +256,7 @@ defmodule Mmt do
       [name | data] = String.split(name_data, "|", trim: true)
       |> Enum.map(&String.trim/1)
       [fname | lnames] = String.split(name, ~r{\s+}, trim: true)
-      result = %{ "FN" => fname}
-      result = Map.put(result, "LN", Enum.join(lnames, " "))
+      result = %{ "FN" => fname, "LN" => Enum.join(lnames, " ")}
       try do
         Enum.reduce(data, result, fn x, acc ->
             [k, v] = Regex.split(~r/=/, x)

@@ -436,4 +436,46 @@ defmodule MmtTest do
       [{"11@xy.com", body1}, {"22@xy.com", body2}], "Test 1", config)
     assert expected == actual
   end
+
+
+  test "parse_name_data() with empty string" do
+    actual = Mmt.parse_name_data("")
+    assert actual == %{}
+  end
+
+
+  test "parse_name_data() with minimum data" do
+    data = "   First    	Last		  "
+    actual = Mmt.parse_name_data(data)
+    assert actual == %{"FN" => "First", "LN" => "Last" }
+  end
+
+
+  test "parse_name_data() with minimum data plus middle names" do
+    data = "   First  M1	  M2  M3  	Last		  "
+    actual = Mmt.parse_name_data(data)
+    assert actual == %{"FN" => "First", "LN" => "M1 M2 M3 Last" }
+  end
+
+
+  test "parse_name_data() with additional key/value pairs" do
+    data = "   First  M1	  M2  M3  	Last |  	CN =	111| PX=DyHich5	  "
+    expected = %{"FN" => "First", "LN" => "M1 M2 M3 Last",
+                  "CN" => "111", "PX" => "DyHich5" }
+    assert Mmt.parse_name_data(data) == expected
+  end
+
+
+  test "parse_name_data() with additional key/value pairs that override FN" do
+    data = "   First  M1	  M2  M3  	Last |  	CN =	Timo| FN=DyHich5  "
+    expected = %{"FN" => "DyHich5", "LN" => "M1 M2 M3 Last", "CN" => "Timo" }
+    assert Mmt.parse_name_data(data) == expected
+  end
+
+
+  test "parse_name_data() with additional key/value pairs that override LN" do
+    data = "   Lucky  M1	  M2  M3  	Last |  LN =	Merkle| FN=dymNaus2  "
+    expected = %{"FN" => "Lucky", "LN" => "Merkle", "FN" => "dymNaus2" }
+    assert Mmt.parse_name_data(data) == expected
+  end
 end

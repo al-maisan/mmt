@@ -239,6 +239,31 @@ defmodule Mmt do
   end
 
 
+  @doc """
+  Parses name data e.g. something like
+
+    Hans Dieter Maier|BN=3345|TAGS=security,bug,cloud|FN=Joe
+
+  would result in the following `Map`:
+
+    %{ "FN" => "Joe", "LN" => "Dieter Maier", "BN" => "3345",
+       "TAGS" => "security,bug,cloud" }
+
+  Return a `Map` with the data found
+  """
+  def parse_name_data(name_data) do
+    if String.length(name_data) > 0 do
+      [name | _data] = String.split(name_data, "|", trim: true)
+        |> Enum.map(&String.trim/1)
+      [fname | lnames] = String.split(name, ~r{\s+}, trim: true)
+      result = %{ "FN" => fname}
+      Map.put(result, "LN", Enum.join(lnames, " "))
+    else
+      %{}
+    end
+  end
+
+
   defp print_help() do
     help_text = """
 

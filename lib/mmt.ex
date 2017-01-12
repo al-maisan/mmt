@@ -259,9 +259,8 @@ defmodule Mmt do
       result = %{ "FN" => fname, "LN" => Enum.join(lnames, " ")}
       try do
         Enum.reduce(data, result, fn x, acc ->
-            [k, v] = Regex.split(~r/=/, x)
-            |> Enum.map(&String.trim/1)
-             Map.put(acc, k, v)
+            [k, v] = Regex.split(~r/=/, x) |> Enum.map(&String.trim/1)
+            Map.put(acc, k, v)
           end)
       rescue
         e in MatchError -> raise "Invalid config: #{e.term}"

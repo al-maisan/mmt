@@ -128,21 +128,17 @@ defmodule Mmt do
     end
     # According to https://www.ietf.org/rfc/rfc2822.txt Cc and Reply-To have
     # the same form/syntax
-    cc = Map.get(config["general"], "Cc")
-    headers = if cc != nil do
-      ccs = String.split(cc, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
-      ["Cc: #{String.trim(ccs)}" | headers]
-    else
-      headers
-    end
-    rt = Map.get(config["general"], "Reply-To")
-    headers = if rt != nil do
-      rts = String.split(rt, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
-      ["Reply-To: #{String.trim(rts)}" | headers]
-    else
-      headers
-    end
-    headers |> Enum.sort
+    ["Cc", "Reply-To"]
+    |> Enum.map(fn(hk) -> {hk, Map.get(config["general"], hk)} end)
+    |> Enum.reduce(headers, fn({hk, hv}, acc) ->
+        if hv != nil do
+          hv = String.split(hv, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
+          ["#{hk}: #{String.trim(hv)}" | acc]
+        else
+          acc
+        end
+      end)
+    |> Enum.sort
   end
 
 
@@ -155,9 +151,9 @@ defmodule Mmt do
       "cat #{path} | #{mprog} -s \"#{subj}\""
     end
     [cmd,
-     (prep_headers(config) |> Enum.map(fn h -> "-a \"#{h}\"" end) |> Enum.join(" ")),
+     (prep_headers(config) |> Enum.map(fn(h) -> "-a \"#{h}\"" end) |> Enum.join(" ")),
      "#{eaddr}"]
-    |> Enum.filter(fn s -> String.length(s) > 0 end)
+    |> Enum.filter(fn(s) -> String.length(s) > 0 end)
     |> Enum.join(" ")
     |> to_char_list
   end
@@ -187,7 +183,7 @@ defmodule Mmt do
   Prepares the text to be printed in case of a dry run.
   """
   def do_dryrun(mails, subj, config) do
-    mails |> Enum.map(fn {eaddr, body} ->
+    mails |> Enum.map(fn({eaddr, body}) ->
       body = String.rstrip(body)
       case get_attachment_path(eaddr, config) do
         nil ->
@@ -220,7 +216,7 @@ defmodule Mmt do
   def prep_emails(config, template) do
     Enum.map(
       config["recipients"],
-      fn {eaddr, name} -> prep_email({template, eaddr, name}) end)
+      fn({eaddr, name}) -> prep_email({template, eaddr, name}) end)
   end
 
 
@@ -234,7 +230,7 @@ defmodule Mmt do
     nd = parse_name_data(name)
     body = Regex.replace(~r/%FN%/, body, nd["FN"], global: true)
     body = Regex.replace(~r/%LN%/, body, nd["LN"], global: true)
-    body = Enum.reduce(nd, body, fn {k,v}, acc ->
+    body = Enum.reduce(nd, body, fn({k,v}, acc) ->
         if k != "FN" and k != "LN" do
           Regex.replace(~r/%#{k}%/, acc, v, global: true)
         else
@@ -265,7 +261,7 @@ defmodule Mmt do
       [fname | lnames] = String.split(name, ~r{\s+}, trim: true)
       result = %{ "FN" => fname, "LN" => Enum.join(lnames, " ")}
       try do
-        Enum.reduce(data, result, fn x, acc ->
+        Enum.reduce(data, result, fn(x, acc) ->
             [k, v] = Regex.split(~r/=/, x) |> Enum.map(&String.trim/1)
             Map.put(acc, k, v)
           end)

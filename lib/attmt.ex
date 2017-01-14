@@ -28,8 +28,7 @@ defmodule Attmt do
   Return `true` or `false`.
   """
   def attachments_present?(config) do
-    atmts = config["attachments"]
-    case atmts do
+    case config["attachments"] do
       nil -> false
       _ -> true
     end
@@ -148,25 +147,25 @@ defmodule Attmt do
     if atmts_present do
       {failed, error} = if do_encrypt == true do
         case GCrypto.check_keys(config) do
-          {:ok, _} -> {nil, nil}
+          {:ok, _} -> {false, nil}
           errordata -> {true, errordata}
         end
       end
       {failed, error} = if not failed do
         case check_config(config) do
-          {:ok, _} -> {nil, nil}
+          {:ok, _} -> {false, nil}
           errordata -> {true, errordata}
         end
       end
       {failed, error} = if not failed do
         case check_files(config) do
-          {:ok, _} -> {nil, nil}
+          {:ok, _} -> {false, nil}
           errordata -> {true, errordata}
         end
       end
       {failed, error} = if (not failed) and do_encrypt do
         case encrypt_attachments(config) do
-          {:ok, _} -> {nil, nil}
+          {:ok, _} -> {false, nil}
           errordata -> {true, errordata}
         end
       end

@@ -118,6 +118,73 @@ defmodule MmtTest do
   end
 
 
+  test "prep_headers() <mailx>, nothing to do" do
+    assert Mmt.prep_headers(%{"general" => %{}}) == []
+  end
+
+
+  test "prep_headers() <mailx>, 'From:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    expected = [["-r", "Frodo Baggins <mmt@chlo.cc>"]]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers() <mailx>, 'Cc:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "Cc" => "jk@lm.no  ,       abc@def.ghi"}}
+    expected = [["-c", "abc@def.ghi, jk@lm.no"]]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers() <mailx>, 'From:' and 'Cc:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "sender-email" => "nno@cckd.cc",
+                     "sender-name" => "Sam Lfhorf",
+                     "Cc" => "jk@lm.no  ,       bc@def.ghi,   aa@bb.cc"}}
+    expected = [
+      ["-c", "aa@bb.cc, bc@def.ghi, jk@lm.no"],
+      ["-r", "Sam Lfhorf <nno@cckd.cc>"]]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers() <mailx>, 'Reply-To:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "Reply-To" => "jk@lm.no"}}
+    expected = [["-S replyto=", "jk@lm.no"]]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers() <mailx>, 'Reply-To:' header, multiple addresses" do
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "Reply-To" => "jk@lm.no 	,   	ab@kfd.cc"}}
+    expected = [["-S replyto=", "ab@kfd.cc, jk@lm.no"]]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
+  test "prep_headers() <mailx>, 'From:' and 'Reply-To:' header" do
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "sender-email" => "nno@cckd.cc",
+                     "sender-name" => "Sam Lfhorf",
+                     "Reply-To" => "aa@bb.cc"}}
+    expected = [
+      ["-S replyto=", "aa@bb.cc"], ["-r", "Sam Lfhorf <nno@cckd.cc>"]]
+    assert Mmt.prep_headers(config) == expected
+  end
+
+
   test "construct_cmd() w/o attachments and headers" do
     path = "/tmp/mmt.kTuJU.eml"
     config = %{
@@ -234,6 +301,128 @@ defmodule MmtTest do
     addr = "ab@example.com"
     mprog = config["general"]["mail-prog"]
     expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -A #{atp}/aa.pdf -a \"From: Frodo Baggins <mmt@chlo.cc>\" ab@example.com"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() <mailx> w/o attachments and headers" do
+    path = "/tmp/mmt.kTuJU.eml"
+    config = %{
+      "general" => %{"mail-prog" => "mailx"}}
+    subj = "hello from mmt"
+    addr = "r2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" r2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() <mailx> w/o attachments" do
+    path = "/tmp/mmt.kTuJU.eml"
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    subj = "hello from mmt"
+    addr = "r2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -r \"Frodo Baggins <mmt@chlo.cc>\" r2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() <mailx> w/o attachments and with both headers" do
+    path = "/tmp/mmt.kTuJU.eml"
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "Cc" => "x@y.zz  ,  a@bb.cc,   f@g.hh",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    subj = "hello from mmt"
+    addr = "r2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -c \"a@bb.cc, f@g.hh, x@y.zz\" -r \"Frodo Baggins <mmt@chlo.cc>\" r2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() <mailx> w/o attachments and with Reply-To header" do
+    path = "/tmp/mmt.kTuJX.eml"
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "Reply-To" => "x@y.zz  ",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    subj = "hello from mmt"
+    addr = "r2d2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -S replyto=\"x@y.zz\" -r \"Frodo Baggins <mmt@chlo.cc>\" r2d2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() <mailx> w/o attachments and with Reply-To header, multi address" do
+    path = "/tmp/mmt.kTuKX.eml"
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "Reply-To" => "x@y.zz  , 	add@kdhfo.co",
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"}}
+    subj = "hello from mmt"
+    addr = "r2d2@ahfdo.cc"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -S replyto=\"add@kdhfo.co, x@y.zz\" -r \"Frodo Baggins <mmt@chlo.cc>\" r2d2@ahfdo.cc"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() <mailx> with encrypted attachments" do
+    path = "/tmp/mmt.kTuJZ.eml"
+    atp = "/tmp/atp"
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "encrypt-attachments" => true,
+                     "attachment-path" => atp,
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"},
+      "attachments" => %{"ab@example.com" => "aa.pdf",
+                         "cd@gmail.com" => "bb.pdf"}}
+    subj = "hello from mmt"
+    addr = "cd@gmail.com"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a #{atp}/bb.pdf.gpg -r \"Frodo Baggins <mmt@chlo.cc>\" cd@gmail.com"
+
+    actual = Mmt.construct_cmd(path, config, subj, addr)
+    assert to_char_list(expected) == actual
+  end
+
+
+  test "construct_cmd() <mailx> with clear text attachments" do
+    path = "/tmp/mmt.kTuJU.eml"
+    atp = "/tmp/atp"
+    config = %{
+      "general" => %{"mail-prog" => "mailx",
+                     "attachment-path" => atp,
+                     "sender-email" => "mmt@chlo.cc",
+                     "sender-name" => "Frodo Baggins"},
+      "attachments" => %{"ab@example.com" => "aa.pdf",
+                         "cd@gmail.com" => "bb.pdf"}}
+    subj = "hello from mmt"
+    addr = "ab@example.com"
+    mprog = config["general"]["mail-prog"]
+    expected = "cat #{path} | #{mprog} -s \"hello from mmt\" -a #{atp}/aa.pdf -r \"Frodo Baggins <mmt@chlo.cc>\" ab@example.com"
 
     actual = Mmt.construct_cmd(path, config, subj, addr)
     assert to_char_list(expected) == actual

@@ -119,10 +119,15 @@ defmodule Mmt do
   Return possibly empty list with email headers.
   """
   def prep_headers(config) do
+    mprog = Map.get(config["general"], "mail-prog", "mail")
     saddr = Map.get(config["general"], "sender-email")
     sname = Map.get(config["general"], "sender-name")
     headers = if saddr != nil and sname != nil do
-      ["From: #{sname} <#{saddr}>"]
+      if mprog == "mailx" do
+        [["-r", "#{sname} <#{saddr}>"]]
+      else
+        ["From: #{sname} <#{saddr}>"]
+      end
     else
       []
     end
@@ -133,7 +138,15 @@ defmodule Mmt do
     |> Enum.reduce(headers, fn({hk, hv}, acc) ->
         if hv != nil do
           hv = String.split(hv, ~r{\s*,\s*}) |> Enum.sort |> Enum.join(", ")
-          ["#{hk}: #{String.trim(hv)}" | acc]
+          if mprog == "mailx" do
+            if hk == "Cc" do
+              [["-c", "#{String.trim(hv)}"] | acc]
+            else
+              [["-S replyto=", "#{String.trim(hv)}"] | acc]
+            end
+          else
+            ["#{hk}: #{String.trim(hv)}" | acc]
+          end
         else
           acc
         end
@@ -146,13 +159,31 @@ defmodule Mmt do
     mprog = Map.get(config["general"], "mail-prog", "mail")
     atp = get_attachment_path(eaddr, config)
     cmd = if atp != nil do
-      "cat #{path} | #{mprog} -s \"#{subj}\" -A #{atp}"
+      if mprog == "mailx" do
+        "cat #{path} | #{mprog} -s \"#{subj}\" -a #{atp}"
+      else
+        "cat #{path} | #{mprog} -s \"#{subj}\" -A #{atp}"
+      end
     else
       "cat #{path} | #{mprog} -s \"#{subj}\""
     end
-    [cmd,
-     (prep_headers(config) |> Enum.map(fn(h) -> "-a \"#{h}\"" end) |> Enum.join(" ")),
-     "#{eaddr}"]
+    if mprog == "mailx" do
+      [cmd,
+       (prep_headers(config)
+        |> Enum.map(fn([k, v]) ->
+          if String.ends_with?(k, "=") do
+            "#{k}\"#{v}\""
+          else
+            "#{k} \"#{v}\""
+          end
+          end)
+        |> Enum.join(" ")),
+       "#{eaddr}"]
+    else
+      [cmd,
+       (prep_headers(config) |> Enum.map(fn(h) -> "-a \"#{h}\"" end) |> Enum.join(" ")),
+       "#{eaddr}"]
+    end
     |> Enum.filter(fn(s) -> String.length(s) > 0 end)
     |> Enum.join(" ")
     |> to_char_list

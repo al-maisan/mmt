@@ -334,15 +334,15 @@ defmodule Mmt do
       # email address is to the left of the '=' sign, first word after is
       # the first name, the rest is the surname
       [general]
-      mail-prog=gnu-mail # arch linux, just 'mail' on ubuntu
+      mail-prog=gnu-mail # arch linux, 'mail' on ubuntu, 'mailx' on Fedora
       #attachment-path=/tmp
       #encrypt-attachments=true
       sender-email=rts@example.com
       sender-name=Frodo Baggins
       #Cc=weirdo@nsb.gov, cc@example.com
       [recipients]
-      jd@example.com=John Doe Jr.|ORG=EFF
-      mm@gmail.com=Mickey Mouse|ORG=Disney   # trailing comment!!
+      jd@example.com=John Doe Jr.
+      mm@gmail.com=Mickey Mouse   # trailing comment!!
       [attachments]
       jd@example.com=01.pdf
       mm@gmail.com=02.pdf
@@ -355,7 +355,7 @@ defmodule Mmt do
     help_text = """
       FN / LN / EA = first name / last name / email address
 
-      Hello %FN% // %LN%, how are things going at %ORG%?
+      Hello %FN% // %LN%, how are things going?
       this is your email * 2: %EA%%EA%.
       """
     IO.puts help_text

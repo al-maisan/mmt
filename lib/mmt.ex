@@ -63,6 +63,10 @@ defmodule Mmt do
       :ok ->
         config = Cfg.read_config(config)
         do_mmt({template, config, parse[:dry_run], parse[:subject]})
+        cfg_file = parse[:config_path]
+        # rename config file to prevent running the same job and spamming the
+        # recipients
+        File.rename(cfg_file, "#{cfg_file}.done")
       {:error, errors} ->
         IO.puts "!! You have errors in the config file:"
         for e <- errors, do: IO.puts "    * #{e}"

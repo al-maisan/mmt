@@ -341,8 +341,8 @@ defmodule Mmt do
       sender-name=Frodo Baggins
       #Cc=weirdo@nsb.gov, cc@example.com
       [recipients]
-      jd@example.com=John Doe Jr.
-      mm@gmail.com=Mickey Mouse   # trailing comment!!
+      jd@example.com=John Doe Jr.|ORG=EFF
+      mm@gmail.com=Mickey Mouse|ORG=Disney   # trailing comment!!
       [attachments]
       jd@example.com=01.pdf
       mm@gmail.com=02.pdf
@@ -355,7 +355,7 @@ defmodule Mmt do
     help_text = """
       FN / LN / EA = first name / last name / email address
 
-      Hello %FN% // %LN%, how are things going?
+      Hello %FN% // %LN%, how are things going at %ORG%?
       this is your email * 2: %EA%%EA%.
       """
     IO.puts help_text

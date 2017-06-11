@@ -496,7 +496,7 @@ defmodule MmtTest do
 
       Love :)
       """
-    actual = Mmt.prep_email({template, "3@xy.com", "Mik Mak|GREETING=Love :)"})
+    actual = Mmt.prep_email({template, "3@xy.com", "Mik Mak|GREETING:-Love :)"})
     assert {"3@xy.com", body} == actual
   end
 
@@ -514,7 +514,7 @@ defmodule MmtTest do
 
       A | B | C
       """
-    actual = Mmt.prep_email({template, "3@xy.com", "Ab Cd|T1=A|T2=B|T3=C"})
+    actual = Mmt.prep_email({template, "3@xy.com", "Ab Cd|T1:-A|T2:-B|T3:-C"})
     assert {"3@xy.com", body} == actual
   end
 
@@ -684,7 +684,7 @@ defmodule MmtTest do
 
 
   test "parse_name_data() with additional key/value pairs" do
-    data = "   First  M1	  M2  M3  	Last |  	CN =	111| PX=DyHich5	  "
+    data = "   First  M1	  M2  M3  	Last |  	CN :-	111| PX:-DyHich5	  "
     expected = %{"FN" => "First", "LN" => "M1 M2 M3 Last",
                   "CN" => "111", "PX" => "DyHich5" }
     assert Mmt.parse_name_data(data) == expected
@@ -692,21 +692,21 @@ defmodule MmtTest do
 
 
   test "parse_name_data() with additional malformed key/value pairs" do
-    data = "   First  M1	  M2  M3  	Last |  	CN %	111| PX=DyHich5	  "
+    data = "   First  M1	  M2  M3  	Last |  	CN %	111| PX:-DyHich5	  "
     assert_raise(RuntimeError, "Invalid config: CN %	111",
                  fn -> Mmt.parse_name_data(data) end)
   end
 
 
   test "parse_name_data() with additional key/value pairs that override FN" do
-    data = "   First  M1	  M2  M3  	Last |  	CN =	Timo| FN=DyHich5  "
+    data = "   First  M1	  M2  M3  	Last |  	CN :-	Timo| FN:-DyHich5  "
     expected = %{"FN" => "DyHich5", "LN" => "M1 M2 M3 Last", "CN" => "Timo" }
     assert Mmt.parse_name_data(data) == expected
   end
 
 
   test "parse_name_data() with additional key/value pairs that override LN" do
-    data = "   Lucky  M1	  M2  M3  	Last |  LN =	Merkle| FN=dymNaus2  "
+    data = "   Lucky  M1	  M2  M3  	Last |  LN :-	Merkle| FN:-dymNaus2  "
     expected = %{"FN" => "Lucky", "LN" => "Merkle", "FN" => "dymNaus2" }
     assert Mmt.parse_name_data(data) == expected
   end

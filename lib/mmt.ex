@@ -297,7 +297,7 @@ defmodule Mmt do
       result = %{ "FN" => fname, "LN" => Enum.join(lnames, " ")}
       try do
         Enum.reduce(data, result, fn(x, acc) ->
-            [k, v] = Regex.split(~r/=/, x) |> Enum.map(&String.trim/1)
+            [k, v] = Regex.split(~r/:-/, x) |> Enum.map(&String.trim/1)
             Map.put(acc, k, v)
           end)
       rescue
@@ -341,8 +341,8 @@ defmodule Mmt do
       sender-name=Frodo Baggins
       #Cc=weirdo@nsb.gov, cc@example.com
       [recipients]
-      jd@example.com=John Doe Jr.|ORG=EFF
-      mm@gmail.com=Mickey Mouse|ORG=Disney   # trailing comment!!
+      jd@example.com=John Doe Jr.|ORG:-EFF|TITLE:-PhD
+      mm@gmail.com=Mickey Mouse|ORG:-Disney   # trailing comment!!
       [attachments]
       jd@example.com=01.pdf
       mm@gmail.com=02.pdf

@@ -280,7 +280,7 @@ defmodule Mmt do
   @doc """
   Parses name data e.g. something like
 
-    Hans Dieter Maier|BN=3345|TAGS=security,bug,cloud|FN=Joe
+    Hans Dieter Maier|BN:-3345|TAGS:-security,bug,cloud|FN:-Joe
 
   would result in the following `Map`:
 

@@ -45,7 +45,7 @@ defmodule Cfg do
     |> Enum.map(
       fn line ->
         [key, value] = String.split(line, ~r{\s*=\s*})
-        {String.strip(key), String.strip(value)}
+        {String.trim(key), String.trim(value)}
       end)
     |> Enum.into(Map.new)
   end

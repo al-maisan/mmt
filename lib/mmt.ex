@@ -97,7 +97,7 @@ defmodule Mmt do
 
   defp write_file(content) do
     {path, 0} = System.cmd("mktemp", ["/tmp/mmt.XXXXX.eml"])
-    path = String.rstrip(path)
+    path = String.trim_trailing(path)
     {:ok, file} = File.open path, [:write]
     IO.binwrite file, content
     File.close file
@@ -111,7 +111,7 @@ defmodule Mmt do
   """
   def do_send([], _, _), do: nil
   def do_send([{eaddr, body}|mails], subj, config) do
-    path = write_file(String.rstrip(body))
+    path = write_file(String.trim_trailing(body))
     cmd = construct_cmd(path, config, subj, eaddr)
     :os.cmd(cmd)
     System.cmd("rm", ["-f", path])
@@ -190,7 +190,7 @@ defmodule Mmt do
     end
     |> Enum.filter(fn(s) -> String.length(s) > 0 end)
     |> Enum.join(" ")
-    |> to_char_list
+    |> Kernel.to_charlist
   end
 
 
@@ -219,7 +219,7 @@ defmodule Mmt do
   """
   def do_dryrun(mails, subj, config) do
     mails |> Enum.map(fn({eaddr, body}) ->
-      body = String.rstrip(body)
+      body = String.trim_trailing(body)
       case get_attachment_path(eaddr, config) do
         nil ->
           """
